@@ -3,9 +3,6 @@ import cors from "cors"
 import morgan from "morgan"
 import dotenv from "dotenv"
 import router from "./routers/index.js"
-import { addUser } from "./firebase/userService.js"
-import hashGmail from "./utils/hashGmail.js"
-// import { hashGmail } from "./utils/hashGmail.js"
 
 /** Setup app express and read .env */
 const app = express()
@@ -24,5 +21,5 @@ const port = process.env.PORT || 8080
 
 /** Start server */
 app.listen(port, () => {
-  console.log(`>>> Server run in port http://localhost:${port}`)
+  console.log(`>>> Server đang chạy tại http://localhost:${port}`)
 })

@@ -8,10 +8,10 @@ try {
     databaseURL:
       "https://volunteerapp-e7f94-default-rtdb.asia-southeast1.firebasedatabase.app/",
   })
-  console.log(">>> Connect firebase successfully")
+  console.log(">>> Kết nối với firebase thành công")
 } catch (error) {
-  console.log(">>> Failed when connect firebase")
-  console.log(">>> Error:", error)
+  console.log(">>> Xảy ra lỗi khi kết nối với firebase")
+  console.log(">>> Lỗi khi kết nối firebase:", error)
 }
 
 /** Xuất đối tượng admin để sử dụng trong các tệp khác */

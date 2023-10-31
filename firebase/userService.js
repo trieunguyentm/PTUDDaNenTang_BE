@@ -8,7 +8,7 @@ export const addUser = async (username, infoUser) => {
   try {
     await usersRef.child(`${username}`).set(infoUser)
   } catch (error) {
-    console.log("Error when add user to database")
+    console.log("Lỗi xảy ra khi thêm người dùng vào database")
     console.log(error)
   }
 }
@@ -18,7 +18,7 @@ export const updateUser = async (username, updatedUser) => {
   try {
     await usersRef.child(`${username}`).update(updatedUser)
   } catch (error) {
-    console.log("Error when update user to database")
+    console.log("Lỗi xảy ra khi cập nhật thông tin người dùng")
     console.log(error)
   }
 }
@@ -28,7 +28,7 @@ export const deleteUser = async (username) => {
   try {
     await usersRef.child(`${username}`).remove()
   } catch (error) {
-    console.log("Error when delete user")
+    console.log("Lỗi xảy ra khi xóa người dùng")
     console.log(error)
   }
 }
@@ -44,10 +44,10 @@ export const getUser = async (username) => {
       console.log("User data:", userData)
       return userData
     } else {
-      console.log(`User ${username} not found`)
+      console.log(`Người dùng ${username} không tìm thấy`)
     }
   } catch (error) {
-    console.log(`Error when get information of user ${username}`)
+    console.log(`Lỗi khi tìm kiếm thông tin người dùng: ${username}`)
     console.log(error)
   }
 }
