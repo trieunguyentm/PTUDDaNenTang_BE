@@ -3,11 +3,13 @@ import cors from "cors"
 import morgan from "morgan"
 import dotenv from "dotenv"
 import router from "./routers/index.js"
-import admin from "./firebase/connect.js"
+import { addUser } from "./firebase/userService.js"
+import hashGmail from "./utils/hashGmail.js"
+// import { hashGmail } from "./utils/hashGmail.js"
 
 /** Setup app express and read .env */
 const app = express()
-dotenv.config({ path: '.env.development' });
+dotenv.config({ path: ".env.development" })
 
 /** Middlewares */
 app.use(express.json())
