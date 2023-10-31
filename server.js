@@ -6,7 +6,7 @@ import router from "./routers/index.js"
 
 /** Setup app express and read .env */
 const app = express()
-dotenv.config()
+dotenv.config({ path: '.env.development' });
 
 /** Middlewares */
 app.use(express.json())
