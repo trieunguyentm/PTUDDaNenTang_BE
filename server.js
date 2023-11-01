@@ -3,6 +3,7 @@ import cors from "cors"
 import morgan from "morgan"
 import dotenv from "dotenv"
 import router from "./routers/index.js"
+import CryptoJS from "crypto-js"
 
 /** Setup app express and read .env */
 const app = express()
@@ -18,6 +19,8 @@ app.use("/api", router)
 
 /** Setup PORT */
 const port = process.env.PORT || 8080
+
+console.log(CryptoJS.AES.encrypt("123456", process.env.KEY_AES).toString())
 
 /** Start server */
 app.listen(port, () => {

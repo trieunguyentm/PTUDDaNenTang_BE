@@ -6,7 +6,14 @@ import { hashGmail } from "../utils/utilsEmail.js"
 
 dotenv.config({ path: "../.env.development" })
 
-export const sendMailRegister = async (gmail, otp) => {
+export const sendMailRegister = async (
+  username,
+  gmail,
+  password,
+  phone,
+  gender,
+  otp,
+) => {
   /** Kiểu của gmail */
   const mailGenerator = new Mailgen({
     theme: "default",
@@ -36,7 +43,7 @@ export const sendMailRegister = async (gmail, otp) => {
   const mailOptions = {
     from: process.env.GMAIL,
     to: gmail,
-    subject: "Xác nhận mã đăng ký",
+    subject: "Xác nhận OTP đăng ký tài khoản",
     html: emailBody,
   }
   /** Tạo transporter (người vận chuyển) */
@@ -55,11 +62,16 @@ export const sendMailRegister = async (gmail, otp) => {
     console.log("Lỗi khi gửi gmail OTP cho người dùng")
   }
   /** Lưu OTP vào database */
-  const otpRegisterRef = admin.database().ref("otpRegister")
+  const otpRegisterRef = admin.database().ref("otpRegisters")
   try {
     await otpRegisterRef.child(hashGmail(gmail)).set({
       otp,
-      expires: Date.now() + 2 * 60 * 1000,
+      expires: Date.now() + 5 * 60 * 1000,
+      username,
+      gmail,
+      password,
+      phone,
+      gender,
     })
   } catch (error) {
     console.log("Lỗi xảy ra khi lưu OTP người dùng")

@@ -11,4 +11,12 @@ userRouter.post(
   userController.register,
 )
 
+/** POST http://localhost:8080/api/auth/verifyOTP */
+userRouter.post(
+  "/verifyOTP",
+  userMiddleware.checkRegister,
+  userMiddleware.checkVerifyOTP,
+  userController.verifyOTP,
+)
+
 export default userRouter
