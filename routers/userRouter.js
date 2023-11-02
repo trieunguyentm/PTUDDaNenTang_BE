@@ -19,4 +19,7 @@ userRouter.post(
   userController.verifyOTP,
 )
 
+/** POST http://localhost:8080/api/auth/siggin */
+userRouter.post("/signin", userMiddleware.checkSignIn, userController.signIn)
+
 export default userRouter

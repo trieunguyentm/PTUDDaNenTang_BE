@@ -6,6 +6,7 @@ import { hashGmail } from "../utils/utilsEmail.js"
 import CryptoJS from "crypto-js"
 import bcrypt from "bcrypt"
 import { addUser } from "../firebase/userService.js"
+import jwt from "jsonwebtoken"
 
 dotenv.config({ path: "../.env.development" })
 
@@ -103,5 +104,50 @@ export const verifyOTP = async (req, res) => {
       console.log(error)
       return res.status(500).json({ msg: "Lỗi khi update OTP trên database" })
     }
+  }
+}
+
+export const signIn = async (req, res) => {
+  const { username, password } = req.body
+  /** Lấy ra thông tin người dùng ứng với username */
+  const usersRef = admin.database().ref("users")
+  const user = usersRef.child(`${username}`)
+  const snapshot = await user.once("value")
+  /** Nếu tên người dùng không tồn tại */
+  if (!snapshot.exists()) {
+    return res.status(404).json({ msg: "Tên người dùng không tồn tại" })
+  }
+  /** Nếu tên người dùng tồn tại */
+  const userData = await snapshot.val()
+  console.log("Trước khi xóa: \n", userData)
+  /** Giải mã mật khẩu */
+  const _password = CryptoJS.AES.decrypt(
+    password,
+    process.env.KEY_AES,
+  ).toString(CryptoJS.enc.Utf8)
+  /** So sánh mật khẩu */
+  try {
+    const checkPassword = await bcrypt.compare(_password, userData.password)
+    if (!checkPassword)
+      return res.status(401).json({ msg: "Mật khẩu không chính xác" })
+    /** Đăng nhập thành công, sinh ra token và trả về */
+    const token = jwt.sign(
+      {
+        username: userData.username,
+        gmail: userData.gmail,
+      },
+      process.env.KEY_JWT,
+      { expiresIn: "24h" },
+    )
+    const _userData = Object.assign({}, userData)
+    delete _userData.password
+    return res
+      .status(200)
+      .json({ msg: "Đăng nhập thành công", user: _userData, token })
+  } catch (error) {
+    console.log(error)
+    return res
+      .status(500)
+      .json({ msg: "Xảy ra lỗi khi xác minh mật khẩu, vui lòng thử lại" })
   }
 }

@@ -41,11 +41,21 @@ export const checkRegister = async (req, res, next) => {
 
 export const checkVerifyOTP = (req, res, next) => {
   const { otp } = req.body
-  if(!otp){
-    return res.status(400).json({msg: "Cần cung cấp kèm OTP"})
+  if (!otp) {
+    return res.status(400).json({ msg: "Cần cung cấp kèm OTP" })
   }
   if (otp && otp.length !== 6) {
     return res.status(400).json({ msg: "Cần cung cấp OTP bao gồm 6 chữ số" })
+  }
+  next()
+}
+
+export const checkSignIn = (req, res, next) => {
+  const { username, password } = req.body
+  if (!username || !password) {
+    return res
+      .status(400)
+      .json({ msg: "Cần cung cấp đầy đủ thông tin đăng nhập" })
   }
   next()
 }
