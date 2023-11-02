@@ -24,7 +24,9 @@ export const register = async (req, res) => {
   const otp = generateOTP()
   try {
     await sendMailRegister(username, gmail, password, phone, gender, otp)
-    return res.status(200).json({ msg: `OTP đã được gửi đến ${gmail}` })
+    return res
+      .status(200)
+      .json({ msg: `OTP đã được gửi đến ${gmail}`, code: 0 })
   } catch (error) {
     return res.status(500).json({ msg: "Lỗi khi gửi gmail xác nhận" })
   }
@@ -91,6 +93,7 @@ export const verifyOTP = async (req, res) => {
               phone,
               gender,
             },
+            code: 0,
           })
         } catch (error) {
           return res
@@ -143,7 +146,7 @@ export const signIn = async (req, res) => {
     delete _userData.password
     return res
       .status(200)
-      .json({ msg: "Đăng nhập thành công", user: _userData, token })
+      .json({ msg: "Đăng nhập thành công", user: _userData, token, code: 0 })
   } catch (error) {
     console.log(error)
     return res
