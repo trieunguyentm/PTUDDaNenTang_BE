@@ -118,11 +118,12 @@ export const signIn = async (req, res) => {
   const snapshot = await user.once("value")
   /** Nếu tên người dùng không tồn tại */
   if (!snapshot.exists()) {
-    return res.status(404).json({ msg: "Tên người dùng không tồn tại" })
+    return res
+      .status(404)
+      .json({ msg: "Tên người dùng không tồn tại", code: 1 })
   }
   /** Nếu tên người dùng tồn tại */
   const userData = await snapshot.val()
-  console.log("Trước khi xóa: \n", userData)
   /** Giải mã mật khẩu */
   const _password = CryptoJS.AES.decrypt(
     password,
@@ -132,7 +133,7 @@ export const signIn = async (req, res) => {
   try {
     const checkPassword = await bcrypt.compare(_password, userData.password)
     if (!checkPassword)
-      return res.status(401).json({ msg: "Mật khẩu không chính xác" })
+      return res.status(401).json({ msg: "Mật khẩu không chính xác", code: 2 })
     /** Đăng nhập thành công, sinh ra token và trả về */
     const token = jwt.sign(
       {
@@ -151,6 +152,9 @@ export const signIn = async (req, res) => {
     console.log(error)
     return res
       .status(500)
-      .json({ msg: "Xảy ra lỗi khi xác minh mật khẩu, vui lòng thử lại" })
+      .json({
+        msg: "Xảy ra lỗi khi xác minh mật khẩu, vui lòng thử lại",
+        code: 3,
+      })
   }
 }
