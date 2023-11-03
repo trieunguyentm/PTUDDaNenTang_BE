@@ -18,7 +18,7 @@ export const register = async (req, res) => {
   const snapshot = await user.once("value")
   /** Nếu tên người dùng đã tồn tại thì trả về lỗi */
   if (snapshot.exists()) {
-    return res.status(409).json({ msg: "Tên người dùng đã tồn tại" })
+    return res.status(409).json({ msg: "Tên người dùng đã tồn tại", code: 1 })
   }
   /** Nếu tên tài khoản chưa có thì sinh ra OTP */
   const otp = generateOTP()
@@ -28,7 +28,7 @@ export const register = async (req, res) => {
       .status(200)
       .json({ msg: `OTP đã được gửi đến ${gmail}`, code: 0 })
   } catch (error) {
-    return res.status(500).json({ msg: "Lỗi khi gửi gmail xác nhận" })
+    return res.status(500).json({ msg: "Lỗi khi gửi gmail xác nhận", code: 2 })
   }
 }
 
@@ -150,11 +150,9 @@ export const signIn = async (req, res) => {
       .json({ msg: "Đăng nhập thành công", user: _userData, token, code: 0 })
   } catch (error) {
     console.log(error)
-    return res
-      .status(500)
-      .json({
-        msg: "Xảy ra lỗi khi xác minh mật khẩu, vui lòng thử lại",
-        code: 3,
-      })
+    return res.status(500).json({
+      msg: "Xảy ra lỗi khi xác minh mật khẩu, vui lòng thử lại",
+      code: 3,
+    })
   }
 }
