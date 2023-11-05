@@ -50,10 +50,10 @@ export const verifyOTP = async (req, res) => {
   const otpData = otpRegisterData.otp
   /** Kiểm tra thời gian và otp và thông tin người dùng */
   if (otp !== otpData) {
-    return res.status(400).json({ msg: "OTP không chính xác" })
+    return res.status(400).json({ msg: "OTP không chính xác", code: 1 })
   }
   if (parseInt(Date.now()) >= parseInt(expiresData)) {
-    return res.status(400).json({ msg: "OTP đã hết hạn" })
+    return res.status(400).json({ msg: "OTP đã hết hạn",code: 2 })
   }
   if (
     username !== otpRegisterData.username ||
