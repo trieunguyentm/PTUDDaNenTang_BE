@@ -7,6 +7,7 @@ try {
     credential: admin.credential.cert(serviceAccount),
     databaseURL:
       "https://volunteerapp-e7f94-default-rtdb.asia-southeast1.firebasedatabase.app/",
+    storageBucket: "volunteerapp-e7f94.appspot.com",
   })
   console.log(">>> Kết nối với firebase thành công")
 } catch (error) {
