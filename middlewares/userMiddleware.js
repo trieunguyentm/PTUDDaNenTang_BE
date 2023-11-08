@@ -11,3 +11,16 @@ export const checkExistToken = (req, res, next) => {
   }
   next()
 }
+
+export const checkDataUpdate = (req, res, next) => {
+  const dataUpdate = req.body
+  const allowedFields = ["displayName", "phone", "gender"]
+  for (const key in dataUpdate) {
+    if (!allowedFields.includes(key)) {
+      return res.status(400).json({
+        msg: `Trường "${key}" không hợp lệ`,
+      })
+    }
+  }
+  next()
+}
