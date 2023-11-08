@@ -2,6 +2,7 @@ import { checkValidGmail } from "../utils/utilsEmail.js"
 import { checkValidPhoneNumber } from "../utils/utilsPhone.js"
 import dotenv from "dotenv"
 import CryptoJS from "crypto-js"
+import { checkUsername } from "../utils/checkUsername.js"
 
 dotenv.config({ path: "../.env.development" })
 
@@ -15,6 +16,10 @@ export const checkRegister = async (req, res, next) => {
   /** Kiểm tra tính hợp lệ của gmail */
   if (!checkValidGmail(gmail)) {
     return res.status(400).json({ msg: "Địa chỉ gmail không hợp lệ" })
+  }
+  /** Kiểm tra tính hợp lệ của username */
+  if (!checkUsername(username)) {
+    return res.status(400).json({ msg: "Tên đăng nhập không hợp lệ" })
   }
   /** Kiểm tra tính hợp lệ của password */
   const _password = CryptoJS.AES.decrypt(
@@ -30,7 +35,7 @@ export const checkRegister = async (req, res, next) => {
   if (phone && !checkValidPhoneNumber(phone)) {
     return res.status(400).json({ msg: "Số điện thoại không hợp lệ" })
   }
-  /** Kiểm tra gender */
+  /** Kiểm tra tính hợp lệ của gender */
   if (gender !== "male" && gender !== "female") {
     return res
       .status(400)
@@ -56,6 +61,10 @@ export const checkSignIn = (req, res, next) => {
     return res
       .status(400)
       .json({ msg: "Cần cung cấp đầy đủ thông tin đăng nhập" })
+  }
+  /** Kiểm tra tính hợp lệ của username */
+  if (!checkUsername(username)) {
+    return res.status(400).json({ msg: "Tên đăng nhập không hợp lệ" })
   }
   next()
 }

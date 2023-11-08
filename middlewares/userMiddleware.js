@@ -1,4 +1,10 @@
+import { checkUsername } from "../utils/checkUsername"
+
 export const checkExistToken = (req, res, next) => {
+  const { username } = req.params
+  if (!checkUsername(username)) {
+    return res.status(400).json({ msg: "Đường dẫn không hợp lệ" })
+  }
   const authHeader = req.header("Authorization")
   if (!authHeader) {
     return res
