@@ -1,4 +1,4 @@
-import { checkUsername } from "../utils/checkUsername"
+import { checkUsername } from "../utils/checkUsername.js"
 
 export const checkExistToken = (req, res, next) => {
   const { username } = req.params
