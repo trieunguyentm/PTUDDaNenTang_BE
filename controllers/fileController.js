@@ -10,7 +10,7 @@ const bucket = admin.storage().bucket()
 
 export const uploadFile = async (req, res) => {
   const file = req.file
-  const token = req.header("Authorization").split(" ")[1]
+  const token = req.header("Authorization")?.split(" ")[1]
   let username, gmail
   if (!token)
     return res.status(401).json({ msg: "Chưa cung cấp token", code: 1 })
