@@ -18,4 +18,12 @@ userRouter.put(
   userController.updateUserData,
 )
 
+/** PUT http://localhost:8080/api/user/changePassword/:username */
+userRouter.put(
+  "/changePassword/:username",
+  userMiddleware.checkExistToken,
+  userMiddleware.checkChangePassword,
+  userController.changePassword
+)
+
 export default userRouter

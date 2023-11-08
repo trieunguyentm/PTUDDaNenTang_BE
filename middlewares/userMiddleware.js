@@ -24,3 +24,13 @@ export const checkDataUpdate = (req, res, next) => {
   }
   next()
 }
+
+export const checkChangePassword = (req, res, next) => {
+  const { currentPassword, newPassword } = req.body
+  if (!currentPassword || !newPassword) {
+    return res
+      .status(400)
+      .json({ msg: "Chưa cung cấp đầy đủ mật khẩu mới và mật khẩu hiện tại" })
+  }
+  next()
+}
