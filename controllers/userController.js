@@ -10,7 +10,13 @@ dotenv.config({ path: "../.env.development" })
 export const getUserData = async (req, res) => {
   /** Lấy token và xác định username */
   const token = req.header("Authorization")?.split(" ")[1]
-  const decoded = jwt.verify(token, process.env.KEY_JWT)
+  let decoded
+  try {
+    decoded = jwt.verify(token, process.env.KEY_JWT)
+  } catch (error) {
+    console.log(error)
+    return res.status(401).json({ msg: "Lỗi khi giải mã token", code: 3 })
+  }
   const username = decoded?.username
   const _username = req.params.username
   if (username !== _username) {
@@ -39,7 +45,14 @@ export const getUserData = async (req, res) => {
 export const updateUserData = async (req, res) => {
   /** Lấy token và xác định username */
   const token = req.header("Authorization")?.split(" ")[1]
-  const decoded = jwt.verify(token, process.env.KEY_JWT)
+  let decoded
+  try {
+    decoded = jwt.verify(token, process.env.KEY_JWT)
+  } catch (error) {
+    console.log(error)
+    return res.status(401).json({ msg: "Lỗi khi giải mã token", code: 3 })
+  }
+
   const _username = decoded?.username
   const { username } = req.params
   if (_username !== username) {
@@ -64,7 +77,13 @@ export const updateUserData = async (req, res) => {
 export const changePassword = async (req, res) => {
   /** Lấy token và xác định username */
   const token = req.header("Authorization")?.split(" ")[1]
-  const decoded = jwt.verify(token, process.env.KEY_JWT)
+  let decoded
+  try {
+    decoded = jwt.verify(token, process.env.KEY_JWT)
+  } catch (error) {
+    console.log(error)
+    return res.status(401).json({ msg: "Lỗi khi giải mã token", code: 7 })
+  }
 
   const username = decoded?.username
   const _username = req.params.username
