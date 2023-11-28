@@ -42,7 +42,7 @@ export const verifyOTP = async (req, res) => {
   if (!snapshot.exists()) {
     return res
       .status(404)
-      .json({ msg: `Không tìm thấy OTP của gmail ${gmail}` })
+      .json({ msg: `Không tìm thấy OTP của gmail ${gmail}`, code: 3 })
   }
   /** Nếu tồn tại snapshot */
   const otpRegisterData = await snapshot.val()
@@ -53,7 +53,7 @@ export const verifyOTP = async (req, res) => {
     return res.status(400).json({ msg: "OTP không chính xác", code: 1 })
   }
   if (parseInt(Date.now()) >= parseInt(expiresData)) {
-    return res.status(400).json({ msg: "OTP đã hết hạn",code: 2 })
+    return res.status(400).json({ msg: "OTP đã hết hạn", code: 2 })
   }
   if (
     username !== otpRegisterData.username ||
@@ -62,7 +62,9 @@ export const verifyOTP = async (req, res) => {
     phone !== phone ||
     gender !== gender
   ) {
-    return res.status(400).json({ msg: "Thông tin người dùng không chính xác" })
+    return res
+      .status(400)
+      .json({ msg: "Thông tin người dùng không chính xác", code: 4 })
   }
   if (otp === otpData && parseInt(Date.now()) < parseInt(expiresData)) {
     /** Reset OTP */
@@ -84,6 +86,7 @@ export const verifyOTP = async (req, res) => {
             password: hashedPassword,
             phone,
             gender,
+            role: "user",
           })
           return res.status(200).json({
             msg: "Đăng ký thành công",
@@ -92,20 +95,26 @@ export const verifyOTP = async (req, res) => {
               gmail,
               phone,
               gender,
+              role: "user",
             },
             code: 0,
           })
         } catch (error) {
-          return res
-            .status(500)
-            .json({ msg: "Lỗi xảy ra khi thêm người dùng vào database" })
+          return res.status(500).json({
+            msg: "Lỗi xảy ra khi thêm người dùng vào database",
+            code: 5,
+          })
         }
       } catch (error) {
-        return res.status(500).json({ msg: "Lỗi xảy ra khi băm mật khẩu" })
+        return res
+          .status(500)
+          .json({ msg: "Lỗi xảy ra khi băm mật khẩu", code: 6 })
       }
     } catch (error) {
       console.log(error)
-      return res.status(500).json({ msg: "Lỗi khi update OTP trên database" })
+      return res
+        .status(500)
+        .json({ msg: "Lỗi khi update OTP trên database", code: 7 })
     }
   }
 }
@@ -139,6 +148,7 @@ export const signIn = async (req, res) => {
       {
         username: userData.username,
         gmail: userData.gmail,
+        role: userData.role ? userData.role : "user",
       },
       process.env.KEY_JWT,
       { expiresIn: "24h" },
