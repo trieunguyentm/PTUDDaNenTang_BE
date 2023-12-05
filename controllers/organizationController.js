@@ -6,6 +6,7 @@ import {
   updateOrganization,
 } from "../firebase/organizationService.js"
 import admin from "../firebase/connect.js"
+import { getOrganizationByUserService } from "../firebase/organizationService.js"
 
 dotenv.config({ path: "../.env.development" })
 /** Tạo storage bucket */
@@ -17,7 +18,6 @@ export const createOrganization = async (req, res) => {
   /** Giải token */
   try {
     const decoded = await jwt.verify(token, process.env.KEY_JWT)
-    console.log(decoded)
     /** Tạo nhóm */
     const { name, description, contactinfo } = req.body
     try {
@@ -142,4 +142,26 @@ export const uploadAvatarOrganization = async (req, res) => {
   })
 
   blobStream.end(file.buffer)
+}
+
+export const getOrganizationByUser = async (req, res) => {
+  /** Lấy ra token được cung cấp */
+  const token = req.header("Authorization")?.split(" ")[1]
+  try {
+    const decoded = jwt.verify(token, process.env.KEY_JWT)
+    const username = decoded.username
+    try {
+      const orangizations = await getOrganizationByUserService(username)
+      return res
+        .status(200)
+        .json({ msg: "Thành công", code: 0, data: orangizations })
+    } catch (error) {
+      console.log(error)
+      return res
+        .status(500)
+        .json({ msg: "Lỗi khi lấy danh sách tổ chức thỏa mãn", code: 2 })
+    }
+  } catch (error) {
+    return res.status(500).json({ msg: "Lỗi khi xác minh token", code: 1 })
+  }
 }

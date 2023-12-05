@@ -62,3 +62,23 @@ export const updateOrganization = async (
     console.log(error)
   }
 }
+
+export const getOrganizationByUserService = async (username) => {
+  const snapshot = await memberOrganizationRef
+    .orderByChild(username)
+    .equalTo(true)
+    .once("value")
+  const organizations = snapshot.val()
+  const organizationIds = organizations ? Object.keys(organizations) : []
+  if (organizationIds.length === 0) return []
+  else {
+    let listOrg = []
+    for (let i = 0; i < organizationIds.length; i++) {
+      const organizationInfoRef = organizationRef.child(`${organizationIds[i]}`)
+      const snapshot = await organizationInfoRef.once("value")
+      const orgData = snapshot.val()
+      if (orgData) listOrg.push(orgData)
+    }
+    return listOrg
+  }
+}

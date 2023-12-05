@@ -24,4 +24,11 @@ organizationRouter.post(
   organizationController.uploadAvatarOrganization,
 )
 
+/** GET http://localhost:8080/api/organization/getOrganizationByUser */
+organizationRouter.get(
+  "/getOrganizationByUser",
+  organizationMiddleware.checkExistToken,
+  organizationController.getOrganizationByUser,
+)
+
 export default organizationRouter
