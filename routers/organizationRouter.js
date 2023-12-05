@@ -1,0 +1,27 @@
+import { Router } from "express"
+import multer from "multer"
+import * as organizationMiddleware from "../middlewares/organizationMiddleware.js"
+import * as organizationController from "../controllers/organizationController.js"
+
+const organizationRouter = Router()
+// Cấu hình Multer để xử lý tải lên tệp
+const storage = multer.memoryStorage()
+const upload = multer({ storage: storage })
+
+/** POST http://localhost:8080/api/organization/create */
+organizationRouter.post(
+  "/create",
+  organizationMiddleware.checkExistToken,
+  organizationMiddleware.checkCreateOrganization,
+  organizationController.createOrganization,
+)
+
+/** POST http://localhost:8080/api/organization/uploadAvatar/:organizationId */
+organizationRouter.post(
+  "/uploadAvatar/:organizationId",
+  upload.single("file"),
+  organizationMiddleware.checkUploadAvatar,
+  organizationController.uploadAvatarOrganization,
+)
+
+export default organizationRouter

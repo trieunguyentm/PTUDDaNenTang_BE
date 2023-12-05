@@ -45,9 +45,11 @@ export const getUser = async (username) => {
       return userData
     } else {
       console.log(`Người dùng ${username} không tìm thấy`)
+      return {}
     }
   } catch (error) {
     console.log(`Lỗi khi tìm kiếm thông tin người dùng: ${username}`)
     console.log(error)
+    return {}
   }
 }

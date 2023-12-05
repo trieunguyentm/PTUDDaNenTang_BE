@@ -1,7 +1,6 @@
 import admin from "../firebase/connect.js"
 import jwt from "jsonwebtoken"
 import dotenv from "dotenv"
-import { json } from "express"
 import { getUser, updateUser } from "../firebase/userService.js"
 
 dotenv.config({ path: "../.env.development" })
@@ -31,7 +30,7 @@ export const uploadFile = async (req, res) => {
       .json({ msg: "Thiếu thông tin người dùng hoặc tệp", code: 3 })
   }
   /** Đường dẫn trên Firebase Storage */
-  const remoteFilePath = `${username}/${file.originalname}`
+  const remoteFilePath = `user/${username}/${file.originalname}`
   /** Tải lên tệp vào Firebase Storage */
   const blob = bucket.file(remoteFilePath)
   const blobStream = blob.createWriteStream({
@@ -42,7 +41,7 @@ export const uploadFile = async (req, res) => {
 
   blobStream.on("error", (error) => {
     console.error("Lỗi khi tải lên tệp:", error)
-    res.status(500).json({ msg: "Lỗi khi tải lên tệp", code: 4 })
+    return res.status(500).json({ msg: "Lỗi khi tải lên tệp", code: 4 })
   })
 
   blobStream.on("finish", () => {
@@ -55,7 +54,9 @@ export const uploadFile = async (req, res) => {
       async (err, url) => {
         if (err) {
           console.error("Lỗi khi lấy URL tải xuống:", err)
-          res.status(500).json({ msg: "Lỗi khi lấy URL tải xuống", code: 5 })
+          return res
+            .status(500)
+            .json({ msg: "Lỗi khi lấy URL tải xuống", code: 5 })
         } else {
           console.log("Tệp đã được tải lên thành công.")
           console.log("URL của tệp đã tải lên:", url)
@@ -73,7 +74,7 @@ export const uploadFile = async (req, res) => {
             })
           } catch (error) {
             console.log("Xảy ra lỗi khi cập nhật avatar người dùng")
-            json.status(500).json({
+            return res.status(500).json({
               msg: "Xảy ra lỗi khi cập nhật avatar người dùng",
               code: 6,
             })
