@@ -38,3 +38,13 @@ organizationRouter.get(
   "/getAllOrganization",
   organizationController.getAllOrganization,
 )
+
+/** POST http://localhost:8080/api/organization/addUserToOrganization */
+organizationRouter.post(
+  "/addUserToOrganization",
+  organizationMiddleware.checkExistToken,
+  organizationMiddleware.checkAddUserToOrganization,
+  organizationMiddleware.checkExistUser,
+  organizationMiddleware.checkExistOrganization,
+  organizationController.addUserToOrganization,
+)

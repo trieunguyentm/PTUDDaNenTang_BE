@@ -180,3 +180,54 @@ export const getAllOrganization = async (req, res) => {
       .json({ msg: "Lỗi khi lấy toàn bộ danh sách tổ chức", code: 1 })
   }
 }
+
+export const addUserToOrganization = async (req, res) => {
+  const { username, organizationId } = req.body
+  /** Lấy dữ liệu tổ chức */
+  const organizationData = await getOrganization(organizationId)
+  /** Lấy ra token được cung cấp */
+  const token = req.header("Authorization")?.split(" ")[1]
+  /** Verify token */
+  try {
+    const decoded = jwt.verify(token, process.env.KEY_JWT)
+    /** Kiểm tra quyền thực hiện của người dùng */
+    if (decoded.username !== organizationData.creator) {
+      return res
+        .status(403)
+        .json({ msg: "Không có quyền thực hiện thao tác", code: 3 })
+    }
+    /** Nếu có quyền thực hiện thì tiếp tục kiểm tra xem người dùng đã có sẵn trong nhóm chưa*/
+    /** Tham chiếu đến nút memberOrganizations sau đó lấy ra Object chứa các thành viên */
+    const memberOrganizationRef = admin.database().ref("memberOrganizations")
+    const memberOrganizationsData = memberOrganizationRef.child(
+      `${organizationId}`,
+    )
+    const snapshot = await memberOrganizationsData.once("value")
+    const dataMemeberInOrganization = snapshot.val()
+    /** Kiểm tra xem người dùng đã có trong tổ chức hay chưa */
+    if (dataMemeberInOrganization[username]) {
+      return res.status(403).json({
+        msg: "Yêu cầu bị từ chối do người dùng đã tồn tại trong tổ chức",
+        code: 4,
+      })
+    }
+    /** Nếu người dùng chưa có trong tổ chức thì tiến hành thêm người dùng */
+    try {
+      await memberOrganizationRef.child(`${organizationId}`).set({
+        ...dataMemeberInOrganization,
+        [username]: true,
+      })
+      return res.status(200).json({ msg: "Thành công", code: 0 })
+    } catch (error) {
+      console.log("Xảy ra lỗi khi thêm người dùng vào tổ chức")
+      return res
+        .status(500)
+        .json({ msg: "Xảy ra lỗi khi thêm người dùng vào tổ chức", code: 5 })
+    }
+  } catch (error) {
+    console.log(error)
+    return res
+      .status(500)
+      .json({ msg: "Xảy ra lỗi khi xác minh token", code: 2 })
+  }
+}
