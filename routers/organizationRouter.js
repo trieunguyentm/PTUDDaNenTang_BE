@@ -32,3 +32,9 @@ organizationRouter.get(
 )
 
 export default organizationRouter
+
+/** GET http://localhost:8080/api/organization/getAllOrganization */
+organizationRouter.get(
+  "/getAllOrganization",
+  organizationController.getAllOrganization,
+)

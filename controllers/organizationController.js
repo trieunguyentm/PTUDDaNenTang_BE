@@ -165,3 +165,18 @@ export const getOrganizationByUser = async (req, res) => {
     return res.status(500).json({ msg: "Lỗi khi xác minh token", code: 1 })
   }
 }
+
+export const getAllOrganization = async (req, res) => {
+  try {
+    const organizationsRef = admin.database().ref("organizations")
+    let listOrg = []
+    await organizationsRef.once("value", (snapshot) => {
+      listOrg = Object.values(snapshot.val())
+    })
+    return res.status(200).json({ msg: "Thành công", code: 0, data: listOrg })
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ msg: "Lỗi khi lấy toàn bộ danh sách tổ chức", code: 1 })
+  }
+}
