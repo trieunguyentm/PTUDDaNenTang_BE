@@ -4,6 +4,10 @@ import admin from "./connect.js"
 const organizationRef = admin.database().ref("organizations")
 /** Tham chiếu đến nút members */
 const memberOrganizationRef = admin.database().ref("memberOrganizations")
+/** Tham chiếu đến nút requestJoinOrganizations */
+const requestJoinOrganizationRef = admin
+  .database()
+  .ref("requestJoinOrganizations")
 
 /** Thêm organization mới vào db */
 export const createNewOrganization = async (
@@ -81,4 +85,21 @@ export const getOrganizationByUserService = async (username) => {
     }
     return listOrg
   }
+}
+
+export const checkRequestOfUser = async (username, organizationId) => {
+  const snapshot = await requestJoinOrganizationRef
+    .orderByChild("username")
+    .equalTo(username)
+    .once("value")
+  /** Nếu người dùng chưa có bất kỳ yêu cầu tham gia tổ chức nào thì trả về false */
+  if (!snapshot.val()) return false
+  /** Nếu người dùng đã gửi một số yêu cầu nào đó thì lấy ra list các ID request */
+  const listRequest = Object.keys(snapshot.val())
+  /** Kiểm tra trong các req đã có req nào gửi đến organizationId này chưa */
+  for (let i = 0; i < listRequest.length; i++) {
+    const request = snapshot.val()[listRequest[i]]
+    if (request.organizationId === organizationId) return true
+  }
+  return false
 }

@@ -1,12 +1,14 @@
 import jwt from "jsonwebtoken"
 import dotenv from "dotenv"
 import {
+  checkRequestOfUser,
   createNewOrganization,
   getOrganization,
   updateOrganization,
 } from "../firebase/organizationService.js"
 import admin from "../firebase/connect.js"
 import { getOrganizationByUserService } from "../firebase/organizationService.js"
+import { CHUA_XU_LY } from "../utils/constraint.js"
 
 dotenv.config({ path: "../.env.development" })
 /** Tạo storage bucket */
@@ -229,5 +231,64 @@ export const addUserToOrganization = async (req, res) => {
     return res
       .status(500)
       .json({ msg: "Xảy ra lỗi khi xác minh token", code: 2 })
+  }
+}
+
+export const requestJoinOrganization = async (req, res) => {
+  const { organizationId } = req.body
+  /** Lấy ra token được cung cấp */
+  const token = req.header("Authorization")?.split(" ")[1]
+  let username
+  try {
+    const decoded = jwt.verify(token, process.env.KEY_JWT)
+    username = decoded.username
+  } catch (error) {
+    console.log("Xảy ra lỗi khi xác minh token")
+    return res
+      .status(500)
+      .json({ msg: "Xảy ra lỗi khi xác minh token", code: 2 })
+  }
+  /** Sau khi lấy ra được username thì tiến hành kiểm tra xem người dùng đã có trong tổ chức hay chưa */
+  const memberOrganizationRef = admin.database().ref("memberOrganizations")
+  const memberOrganizationsData = memberOrganizationRef.child(
+    `${organizationId}`,
+  )
+  const snapshot = await memberOrganizationsData.once("value")
+  const dataMemeberInOrganization = snapshot.val()
+  /** Kiểm tra xem người dùng đã có trong tổ chức hay chưa */
+  if (dataMemeberInOrganization[username]) {
+    return res.status(403).json({
+      msg: "Yêu cầu bị từ chối do người dùng đã tồn tại trong tổ chức",
+      code: 4,
+    })
+  }
+  /** Nếu chưa tham gia thì Kiểm tra xem người dùng đã gửi yêu cầu tham gia trước đó chưa */
+  const check = await checkRequestOfUser(username, organizationId)
+  if (check) {
+    return res
+      .status(400)
+      .json({ msg: "Bạn đã gửi yêu cầu tham gia tổ chức này rồi", code: 5 })
+  }
+  /** Tạo ra một requestJoinOrganization */
+  const requestJoinOrganizationRef = admin
+    .database()
+    .ref("requestJoinOrganizations")
+  const newRequestRef = requestJoinOrganizationRef.push()
+  const newRequestId = newRequestRef.key
+  try {
+    await newRequestRef.set({
+      id: newRequestId,
+      username: username,
+      organizationId: organizationId,
+      status: CHUA_XU_LY,
+    })
+    return res
+      .status(200)
+      .json({ msg: "Gửi yêu cầu tham gia tổ chức thành công", code: 0 })
+  } catch (error) {
+    console.log("Xảy ra lỗi khi thêm requestJoinOrganization")
+    return res
+      .status(500)
+      .json({ msg: "Xảy ra lỗi khi thêm requestJoinOrganization", code: 3 })
   }
 }

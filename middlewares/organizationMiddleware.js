@@ -90,3 +90,10 @@ export const checkExistOrganization = async (req, res, next) => {
   }
   next()
 }
+
+export const checkRequestJoinOrganization = (req, res, next) => {
+  const { organizationId } = req.body
+  if (!organizationId)
+    return res.status(400).json({ msg: "Chưa cung cấp Id tổ chức", code: 1 })
+  next()
+}
