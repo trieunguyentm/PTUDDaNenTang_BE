@@ -8,7 +8,7 @@ import {
 } from "../firebase/organizationService.js"
 import admin from "../firebase/connect.js"
 import { getOrganizationByUserService } from "../firebase/organizationService.js"
-import { CHUA_XU_LY } from "../utils/constraint.js"
+import { CHUA_XU_LY, DONG_Y, TU_CHOI } from "../utils/constraint.js"
 
 dotenv.config({ path: "../.env.development" })
 /** Tạo storage bucket */
@@ -328,5 +328,104 @@ export const getOrganizationByCreator = async (req, res) => {
       msg: "Lỗi khi thực hiện lấy các tổ chức mà người dùng tạo ra",
       code: 3,
     })
+  }
+}
+
+export const handleRequestJoinOrganization = async (req, res) => {
+  const { requestJoinOrganizationId, option } = req.body
+  /** Lấy ra token được cung cấp */
+  const token = req.header("Authorization")?.split(" ")[1]
+  let username
+  /** Lấy username */
+  try {
+    const decoded = await jwt.verify(token, process.env.KEY_JWT)
+    username = decoded.username
+  } catch (error) {
+    console.log("Lỗi khi xác minh token")
+    return res.status(500).json({ msg: "Lỗi khi xác minh token", code: 5 })
+  }
+  /** Lấy thông tin của requestJoinOrganization */
+  const requestJoinOrganizationRef = admin
+    .database()
+    .ref("requestJoinOrganizations")
+  const requestRef = requestJoinOrganizationRef.child(
+    `${requestJoinOrganizationId}`,
+  )
+  const snapshotRequest = await requestRef.once("value")
+  if (!snapshotRequest.exists())
+    return res.status(404).json({ msg: "Id yêu cầu không tồn tại", code: 2 })
+  const requestData = snapshotRequest.val()
+  const userWantJoin = requestData.username
+  const organizationWantJoin = requestData.organizationId
+  /** Kiểm tra xem organizationWantJoin có tồn tại hay không */
+  const organizationRef = admin.database().ref("organizations")
+  const snapshotOrganization = await organizationRef
+    .child(`${organizationWantJoin}`)
+    .once("value")
+  if (!snapshotOrganization.exists())
+    return res.status(404).json({ msg: "Id tổ chức không tồn tại", code: 3 })
+  /** Kiểm tra xem userWantJoin có tồn tại hay không */
+  const userRef = admin.database().ref("users")
+  const snapshotUser = await userRef.child(`${userWantJoin}`).once("value")
+  if (!snapshotUser.exists())
+    return res
+      .status(404)
+      .json({ msg: "Người dùng yêu cầu không tồn tại", code: 4 })
+  /** Kiểm tra quyền thực hiện của người dùng */
+  if (username !== snapshotOrganization.val().creator)
+    return res.json({
+      msg: "Không có quyền thực hiện xử lý yêu cầu đăng ký",
+      code: 6,
+    })
+  if (option === TU_CHOI) {
+    admin
+      .database()
+      .ref(`requestJoinOrganizations/${requestJoinOrganizationId}`)
+      .remove()
+      .then(() => {
+        console.log("Đã từ chối yêu cầu tham gia tổ chức")
+        res
+          .status(200)
+          .json({ msg: "Đã từ chối yêu cầu tham gia tổ chức", code: 0 })
+      })
+      .catch(() => {
+        console.log("Lỗi khi từ chối yêu cầu")
+        res.status(500).json({ msg: "Lỗi khi từ chối yêu cầu", code: 7 })
+      })
+    return
+  }
+  if (option === DONG_Y) {
+    /** Lấy ra thông tin thành viên hiện tại của tổ chức */
+    const snapshotMemberOrganization = await admin
+      .database()
+      .ref("memberOrganizations")
+      .child(`${organizationWantJoin}`)
+      .once("value")
+    const dataSnapshotMemberOrganization = snapshotMemberOrganization.val()
+    /** Thêm thành viên mới */
+    await admin
+      .database()
+      .ref("memberOrganizations")
+      .child(`${organizationWantJoin}`)
+      .set({
+        ...dataSnapshotMemberOrganization,
+        [userWantJoin]: true,
+      })
+    /** Xóa requestJoinOrganization */
+    admin
+      .database()
+      .ref(`requestJoinOrganizations/${requestJoinOrganizationId}`)
+      .remove()
+      .then(() => {
+        console.log("Đã đồng ý yêu cầu tham gia tổ chức")
+        res
+          .status(200)
+          .json({ msg: "Đã đồng ý yêu cầu tham gia tổ chức", code: 0 })
+      })
+      .catch(() => {
+        console.log("Lỗi khi từ chối yêu cầu")
+        res.status(500).json({ msg: "Lỗi khi đồng ý yêu cầu", code: 8 })
+      })
+    return
   }
 }

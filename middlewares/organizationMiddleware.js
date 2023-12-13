@@ -1,6 +1,7 @@
 import dotenv from "dotenv"
 import mime from "mime-types"
 import admin from "../firebase/connect.js"
+import { DONG_Y, TU_CHOI } from "../utils/constraint.js"
 
 dotenv.config({ path: "../.env.development" })
 
@@ -95,5 +96,18 @@ export const checkRequestJoinOrganization = (req, res, next) => {
   const { organizationId } = req.body
   if (!organizationId)
     return res.status(400).json({ msg: "Chưa cung cấp Id tổ chức", code: 1 })
+  next()
+}
+
+export const checkHandleRequestJoinOrganization = (req, res, next) => {
+  const { requestJoinOrganizationId, option } = req.body
+  if (!requestJoinOrganizationId)
+    return res
+      .status(400)
+      .json({ msg: "Chưa cung cấp Id của yêu cầu", code: 1 })
+  if (!option)
+    return res.status(400).json({ msg: "Chưa cung cấp lựa chọn", code: 1 })
+  if (option !== TU_CHOI && option !== DONG_Y)
+    return res.status(400).json({ msg: "Lựa chọn không hợp lệ", code: 1 })
   next()
 }
