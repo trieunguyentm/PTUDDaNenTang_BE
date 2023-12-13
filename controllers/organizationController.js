@@ -429,3 +429,58 @@ export const handleRequestJoinOrganization = async (req, res) => {
     return
   }
 }
+
+export const getRequestJoinOrganization = async (req, res) => {
+  const { organizationId } = req.body
+  /** Lấy ra token được cung cấp */
+  const token = req.header("Authorization")?.split(" ")[1]
+  let username
+  try {
+    const decoded = await jwt.verify(token, process.env.KEY_JWT)
+    username = decoded.username
+  } catch (error) {
+    console.log("Lỗi khi xác minh token")
+    return res.status(500).json({ msg: "Lỗi khi xác minh token", code: 2 })
+  }
+  /** Lấy ra thông tin tổ chức */
+  const organizationData = (
+    await admin
+      .database()
+      .ref("organizations")
+      .child(`${organizationId}`)
+      .once("value")
+  ).val()
+  /** Kiểm tra quyền truy cập */
+  if (username !== organizationData.creator)
+    return res
+      .status(403)
+      .json({ msg: "Không có quyền truy cập dữ liệu", code: 3 })
+  /** Có quyền truy cập -> Lấy ra toàn bộ các yêu cầu của tổ chức */
+  const requestData = (
+    await admin
+      .database()
+      .ref("requestJoinOrganizations")
+      .orderByChild("organizationId")
+      .equalTo(organizationId)
+      .once("value")
+  ).val()
+  if (!requestData)
+    return res
+      .status(200)
+      .json({ msg: "Lấy dữ liệu thành công", data: [], code: 0 })
+  const listRequestId = Object.keys(requestData)
+  let data = []
+  for (let i = 0; i < listRequestId.length; i++) {
+    const dataRes = (
+      await admin
+        .database()
+        .ref("requestJoinOrganizations")
+        .child(`${listRequestId[i]}`)
+        .once("value")
+    ).val()
+    data.push(dataRes)
+  }
+  return res
+    .status(200)
+    .json({ msg: "Lấy dữ liệu thành công", data: data, code: 0 })
+}
