@@ -30,4 +30,11 @@ helpRequestRouter.get(
   helpRequestController.getAllHelpRequest,
 )
 
+/** GET http://localhost:8080/api/helpRequest/getHelpRequestByUser */
+helpRequestRouter.get(
+  "/getHelpRequestByUser",
+  helpRequestMiddleware.checkExistToken,
+  helpRequestController.getHelpRequestByUser,
+)
+
 export default helpRequestRouter

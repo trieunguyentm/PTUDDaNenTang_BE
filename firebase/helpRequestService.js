@@ -15,3 +15,24 @@ export const getAllHelpRequestService = async () => {
   }
   return data
 }
+
+export const getHelpRequestByUserService = async (username) => {
+  const helpRequestData = (
+    await helpRequestRef
+      .orderByChild("createdBy")
+      .equalTo(username)
+      .once("value")
+  ).val()
+  if (!helpRequestData) return []
+  else {
+    let data = []
+    const listId = Object.keys(helpRequestData)
+    for (let i = 0; i < listId.length; i++) {
+      const dataRes = (
+        await helpRequestRef.child(`${listId[i]}`).once("value")
+      ).val()
+      data.push(dataRes)
+    }
+    return data
+  }
+}
