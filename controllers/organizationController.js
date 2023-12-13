@@ -292,3 +292,41 @@ export const requestJoinOrganization = async (req, res) => {
       .json({ msg: "Xảy ra lỗi khi thêm requestJoinOrganization", code: 3 })
   }
 }
+
+export const getOrganizationByCreator = async (req, res) => {
+  /** Lấy ra token được cung cấp */
+  const token = req.header("Authorization")?.split(" ")[1]
+  let username
+  try {
+    const decoded = await jwt.verify(token, process.env.KEY_JWT)
+    username = decoded.username
+  } catch (error) {
+    console.log("Lỗi khi xác minh token")
+    return res.status(500).json({ msg: "Lỗi khi xác minh token", code: 2 })
+  }
+  /** Sau khi lấy ra được user */
+  const organizationsRef = admin.database().ref("organizations")
+  try {
+    const snapshot = await organizationsRef
+      .orderByChild("creator")
+      .equalTo(username)
+      .once("value")
+    if (!snapshot.val())
+      return res.status(200).json({ msg: "Thành công", data: [], code: 0 })
+    const listOrganizationId = Object.keys(snapshot.val())
+    let data = []
+    for (let i = 0; i < listOrganizationId.length; i++) {
+      const _snapshot = await organizationsRef
+        .child(`${listOrganizationId[i]}`)
+        .once("value")
+      data.push(_snapshot.val())
+    }
+    return res.status(200).json({ msg: "Thành công", data: data, code: 0 })
+  } catch (error) {
+    console.log("Lỗi khi thực hiện lấy các tổ chức mà người dùng tạo ra")
+    return res.status(500).json({
+      msg: "Lỗi khi thực hiện lấy các tổ chức mà người dùng tạo ra",
+      code: 3,
+    })
+  }
+}

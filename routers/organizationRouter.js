@@ -56,4 +56,11 @@ organizationRouter.post(
   organizationController.requestJoinOrganization,
 )
 
+/** GET http://localhost:8080/api/organization/getOrganizationByCreator */
+organizationRouter.get(
+  "/getOrganizationByCreator",
+  organizationMiddleware.checkExistToken,
+  organizationController.getOrganizationByCreator,
+)
+
 export default organizationRouter
