@@ -24,4 +24,10 @@ helpRequestRouter.post(
   helpRequestController.createHelpRequest,
 )
 
+/** GET http://localhost:8080/api/helpRequest/getAllHelpRequest */
+helpRequestRouter.get(
+  "/getAllHelpRequest",
+  helpRequestController.getAllHelpRequest,
+)
+
 export default helpRequestRouter

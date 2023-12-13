@@ -1,5 +1,6 @@
 import admin from "../firebase/connect.js"
 import jwt from "jsonwebtoken"
+import { getAllHelpRequestService } from "../firebase/helpRequestService.js"
 
 export const createHelpRequest = async (req, res) => {
   const { title, description } = req.body
@@ -59,5 +60,19 @@ export const createHelpRequest = async (req, res) => {
   } catch (error) {
     console.log(error)
     return res.status(500).json({ msg: "Xảy ra lỗi khi tải ảnh", code: 3 })
+  }
+}
+
+export const getAllHelpRequest = async (req, res) => {
+  try {
+    const data = await getAllHelpRequestService()
+    return res
+      .status(200)
+      .json({ msg: "Lấy dữ liệu thành công", data, code: 0 })
+  } catch (error) {
+    console.log(error)
+    return res
+      .status(500)
+      .json({ msg: "Lỗi khi lấy các yêu cầu hỗ trợ", code: 2 })
   }
 }
