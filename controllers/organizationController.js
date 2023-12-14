@@ -282,9 +282,16 @@ export const requestJoinOrganization = async (req, res) => {
       organizationId: organizationId,
       status: CHUA_XU_LY,
     })
-    return res
-      .status(200)
-      .json({ msg: "Gửi yêu cầu tham gia tổ chức thành công", code: 0 })
+    return res.status(200).json({
+      msg: "Gửi yêu cầu tham gia tổ chức thành công",
+      code: 0,
+      data: {
+        id: newRequestId,
+        username,
+        organizationId,
+        status: CHUA_XU_LY,
+      },
+    })
   } catch (error) {
     console.log("Xảy ra lỗi khi thêm requestJoinOrganization")
     return res
