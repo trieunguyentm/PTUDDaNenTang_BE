@@ -513,3 +513,13 @@ export const getUserInOrganization = async (req, res) => {
     .status(200)
     .json({ msg: "Thành công", code: 0, data: Object.keys(memberData) })
 }
+
+export const checkUserJoinOrganization = async (req, res) => {
+  const { username, organizationId } = req.body
+  const resRef = admin
+    .database()
+    .ref(`memberOrganizations/${organizationId}/${username}`)
+  const check = (await resRef.once("value")).val()
+  if (!check) return res.status(200).json({ msg: "Thành công", check: false })
+  else return res.status(200).json({ msg: "Thành công", check: true })
+}

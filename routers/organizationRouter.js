@@ -87,4 +87,12 @@ organizationRouter.get(
   organizationController.getUserInOrganization,
 )
 
+/** POST http://localhost:8080/api/organization/checkUserJoinOrganization */
+organizationRouter.post(
+  "/checkUserJoinOrganization",
+  organizationMiddleware.checkExistUser,
+  organizationMiddleware.checkExistOrganization,
+  organizationController.checkUserJoinOrganization,
+)
+
 export default organizationRouter
