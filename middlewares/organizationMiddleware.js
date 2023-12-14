@@ -111,3 +111,14 @@ export const checkHandleRequestJoinOrganization = (req, res, next) => {
     return res.status(400).json({ msg: "Lựa chọn không hợp lệ", code: 1 })
   next()
 }
+
+export const checkExistOrganizationParams = async (req, res, next) => {
+  const { organizationId } = req.params
+  const organizationsRef = admin.database().ref("organizations")
+  const organizationDataRef = organizationsRef.child(`${organizationId}`)
+  const snapshot = await organizationDataRef.once("value")
+  if (!snapshot.exists()) {
+    return res.status(404).json({ msg: "Tổ chức không tồn tại", code: 1 })
+  }
+  next()
+}

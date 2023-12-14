@@ -484,3 +484,32 @@ export const getRequestJoinOrganization = async (req, res) => {
     .status(200)
     .json({ msg: "Lấy dữ liệu thành công", data: data, code: 0 })
 }
+
+export const getUserInOrganization = async (req, res) => {
+  const { organizationId } = req.params
+  /** Lấy ra token được cung cấp */
+  const token = req.header("Authorization")?.split(" ")[1]
+  let username
+  try {
+    const decoded = await jwt.verify(token, process.env.KEY_JWT)
+    username = decoded.username
+  } catch (error) {
+    return res.status(500).json({ msg: "Lỗi khi xác minh token", code: 2 })
+  }
+  /** Lấy ra được username sau đó tiến hành kiểm tra */
+  const memberOrganizationsDataRef = admin
+    .database()
+    .ref(`memberOrganizations/${organizationId}`)
+  const memberData = (await memberOrganizationsDataRef.once("value")).val()
+  if (!memberData)
+    return res.status(200).json({ msg: "Thành công", code: 0, data: [] })
+  const listMember = Object.keys(memberData)
+  if (!listMember.includes(username))
+    return res.status(400).json({
+      msg: "Người dùng không thể xem được thông tin thành viên của nhóm này",
+      code: 3,
+    })
+  return res
+    .status(200)
+    .json({ msg: "Thành công", code: 0, data: Object.keys(memberData) })
+}

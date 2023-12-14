@@ -78,4 +78,13 @@ organizationRouter.post(
   organizationMiddleware.checkExistOrganization,
   organizationController.getRequestJoinOrganization,
 )
+
+/** GET http://localhost:8080/api/organization/getUserInOrganization/:organizationId */
+organizationRouter.get(
+  "/getUserInOrganization/:organizationId",
+  organizationMiddleware.checkExistToken,
+  organizationMiddleware.checkExistOrganizationParams,
+  organizationController.getUserInOrganization,
+)
+
 export default organizationRouter
