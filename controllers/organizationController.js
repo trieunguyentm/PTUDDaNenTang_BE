@@ -625,6 +625,6 @@ export const createPostInOrganization = async (req, res) => {
     createdAt: Date.now().toString(),
     updatedAt: Date.now().toString(),
   }
-  await admin.database().ref(`postInOrganization/${organizationId}`).set(data)
+  await admin.database().ref(`postInOrganization/${v4()}`).set(data)
   return res.status(200).json({ msg: "Đăng bài thành công", data, code: 0 })
 }
