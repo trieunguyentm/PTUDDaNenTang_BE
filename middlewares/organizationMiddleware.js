@@ -131,3 +131,12 @@ export const checkUpdateOrganization = (req, res, next) => {
       .json({ msg: "Hãy cung cấp dữ liệu cần thay đổi", code: 1 })
   next()
 }
+
+export const checkCreatePostInOrganization = (req, res, next) => {
+  const { description } = req.body
+  if (!description)
+    return res
+      .status(400)
+      .json({ msg: "Vui lòng cung cấp nội dung bài đăng", code: 1 })
+  next()
+}

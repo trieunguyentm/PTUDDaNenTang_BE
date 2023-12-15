@@ -7,6 +7,16 @@ const organizationRouter = Router()
 // Cấu hình Multer để xử lý tải lên tệp
 const storage = multer.memoryStorage()
 const upload = multer({ storage: storage })
+const upload_image = multer({
+  storage: storage,
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith("image/")) {
+      cb(null, true)
+    } else {
+      cb(new Error("Chỉ chấp nhận file ảnh"), false)
+    }
+  },
+})
 
 /** POST http://localhost:8080/api/organization/create */
 organizationRouter.post(
@@ -104,4 +114,13 @@ organizationRouter.put(
   organizationController.updateInfoOrganization,
 )
 
+/** POST http://localhost:8080/api/organization/createPostInOrganization */
+organizationRouter.post(
+  "/createPostInOrganization",
+  upload_image.array("images", 10),
+  organizationMiddleware.checkExistToken,
+  organizationMiddleware.checkCreatePostInOrganization,
+  organizationMiddleware.checkExistOrganization,
+  organizationController.createPostInOrganization,
+)
 export default organizationRouter

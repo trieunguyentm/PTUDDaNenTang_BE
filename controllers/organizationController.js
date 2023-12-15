@@ -9,6 +9,7 @@ import {
 import admin from "../firebase/connect.js"
 import { getOrganizationByUserService } from "../firebase/organizationService.js"
 import { CHUA_XU_LY, DONG_Y, TU_CHOI } from "../utils/constraint.js"
+import { v4 } from "uuid"
 
 dotenv.config({ path: "../.env.development" })
 /** Tạo storage bucket */
@@ -563,17 +564,67 @@ export const updateInfoOrganization = async (req, res) => {
       .set({
         ...dataOrganization,
       })
-    return res
-      .status(200)
-      .json({
-        msg: "Cập nhật dữ liệu thành công",
-        code: 0,
-        data: dataOrganization,
-      })
+    return res.status(200).json({
+      msg: "Cập nhật dữ liệu thành công",
+      code: 0,
+      data: dataOrganization,
+    })
   } catch (error) {
     console.log("Lỗi khi update thông tin tổ chức")
     return res
       .status(500)
       .json({ msg: "Lỗi khi update thông tin tổ chức", code: 4 })
   }
+}
+
+export const createPostInOrganization = async (req, res) => {
+  const { organizationId, description } = req.body
+  /** Lấy ra token được cung cấp */
+  const token = req.header("Authorization")?.split(" ")[1]
+  let username
+  try {
+    const decoded = await jwt.verify(token, process.env.KEY_JWT)
+    username = decoded.username
+  } catch (error) {
+    return res.status(500).json({ msg: "Lỗi khi xác minh token", code: 2 })
+  }
+  /** Kiểm tra quyền đăng bài */
+  const check = await (
+    await admin
+      .database()
+      .ref(`memberOrganizations/${organizationId}/${username}`)
+      .once("value")
+  ).val()
+  if (!check)
+    return res
+      .status(403)
+      .json({ msg: "Bạn không có quyền đăng bài trong tổ chức này", code: 3 })
+  /** Kiểm tra file ảnh */
+  const imageUrls = []
+  if (req.files) {
+    for (const file of req.files) {
+      const fileRef = admin
+        .storage()
+        .bucket()
+        .file(`postInOrganization/${organizationId}/${file.originalname}`)
+      await fileRef.save(file.buffer)
+      const url = await fileRef.getSignedUrl({
+        action: "read",
+        expires: "03-01-2500",
+      })
+      imageUrls.push(url[0])
+    }
+  }
+  /** Đăng bài trong tổ chức */
+  const data = {
+    id: v4(),
+    creator: username,
+    organizationId: organizationId,
+    description: description,
+    imageUrls: imageUrls,
+    createdAt: Date.now().toString(),
+    updatedAt: Date.now().toString(),
+  }
+  await admin.database().ref(`postInOrganization/${organizationId}`).set(data)
+  return res.status(200).json({ msg: "Đăng bài thành công", data, code: 0 })
 }
