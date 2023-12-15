@@ -628,3 +628,51 @@ export const createPostInOrganization = async (req, res) => {
   await admin.database().ref(`postInOrganization/${v4()}`).set(data)
   return res.status(200).json({ msg: "Đăng bài thành công", data, code: 0 })
 }
+
+export const getRequestJoinOrganizationByUser = async (req, res) => {
+  /** Lấy ra token được cung cấp */
+  const token = req.header("Authorization")?.split(" ")[1]
+  let username
+  try {
+    const decoded = await jwt.verify(token, process.env.KEY_JWT)
+    username = decoded.username
+  } catch (error) {
+    return res.status(500).json({ msg: "Lỗi khi xác minh token", code: 2 })
+  }
+  /** Lấy các yêu cầu tham gia của người dùng username */
+  try {
+    const requestByUser = (
+      await admin
+        .database()
+        .ref("requestJoinOrganizations")
+        .orderByChild("username")
+        .equalTo(username)
+        .once("value")
+    ).val()
+    console.log(requestByUser)
+    if (!requestByUser)
+      return res
+        .status(200)
+        .json({ msg: "Lấy dữ liệu thành công", data: [], code: 0 })
+    const listIdRequest = Object.keys(requestByUser)
+    let data = []
+    for (let i = 0; i < listIdRequest.length; i++) {
+      const dataRequest = (
+        await admin
+          .database()
+          .ref(`requestJoinOrganizations/${listIdRequest[i]}`)
+          .once("value")
+      ).val()
+      data.push(dataRequest)
+    }
+    return res
+      .status(200)
+      .json({ msg: "Lấy dữ liệu thành công", data, code: 0 })
+  } catch (error) {
+    console.log("Xảy ra lỗi khi lấy yêu cầu tham gia của người dùng:", error)
+    return res.status(500).json({
+      msg: "Xảy ra lỗi khi lấy yêu cầu tham gia của người dùng",
+      code: 3,
+    })
+  }
+}
