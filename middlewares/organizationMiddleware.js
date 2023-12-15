@@ -122,3 +122,12 @@ export const checkExistOrganizationParams = async (req, res, next) => {
   }
   next()
 }
+
+export const checkUpdateOrganization = (req, res, next) => {
+  const { contactinfo, name, description } = req.body
+  if (!contactinfo && !name && !description)
+    return res
+      .status(400)
+      .json({ msg: "Hãy cung cấp dữ liệu cần thay đổi", code: 1 })
+  next()
+}

@@ -95,4 +95,13 @@ organizationRouter.post(
   organizationController.checkUserJoinOrganization,
 )
 
+/** PUT http://localhost:8080/api/organization/updateOrganization/:organizationId */
+organizationRouter.put(
+  "/updateOrganization/:organizationId",
+  organizationMiddleware.checkExistToken,
+  organizationMiddleware.checkExistOrganizationParams,
+  organizationMiddleware.checkUpdateOrganization,
+  organizationController.updateInfoOrganization,
+)
+
 export default organizationRouter

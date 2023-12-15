@@ -530,3 +530,50 @@ export const checkUserJoinOrganization = async (req, res) => {
   if (!check) return res.status(200).json({ msg: "Thành công", check: false })
   else return res.status(200).json({ msg: "Thành công", check: true })
 }
+
+export const updateInfoOrganization = async (req, res) => {
+  const { organizationId } = req.params
+  /** Lấy ra token được cung cấp */
+  const token = req.header("Authorization")?.split(" ")[1]
+  let username
+  try {
+    const decoded = await jwt.verify(token, process.env.KEY_JWT)
+    username = decoded.username
+  } catch (error) {
+    return res.status(500).json({ msg: "Lỗi khi xác minh token", code: 2 })
+  }
+  /** So sánh username với creator của tổ chức */
+  let dataOrganization = (
+    await admin.database().ref(`organizations/${organizationId}`).once("value")
+  ).val()
+  if (username !== dataOrganization.creator) {
+    return res
+      .status(403)
+      .json({ msg: "Bạn không có quyền thay đổi dữ liệu tổ chức", code: 3 })
+  }
+  const { contactinfo, name, description } = req.body
+  if (contactinfo) dataOrganization = { ...dataOrganization, contactinfo }
+  if (name) dataOrganization = { ...dataOrganization, name }
+  if (description) dataOrganization = { ...dataOrganization, description }
+  /** Update */
+  try {
+    await admin
+      .database()
+      .ref(`organizations/${organizationId}`)
+      .set({
+        ...dataOrganization,
+      })
+    return res
+      .status(200)
+      .json({
+        msg: "Cập nhật dữ liệu thành công",
+        code: 0,
+        data: dataOrganization,
+      })
+  } catch (error) {
+    console.log("Lỗi khi update thông tin tổ chức")
+    return res
+      .status(500)
+      .json({ msg: "Lỗi khi update thông tin tổ chức", code: 4 })
+  }
+}
