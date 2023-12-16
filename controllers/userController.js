@@ -27,13 +27,13 @@ export const getUserData = async (req, res) => {
     if (!userData)
       return res
         .status(400)
-        .json({ msg: "Người dùng này không tồn tại", code: 4, data: {} })
+        .json({ msg: "Người dùng này không tồn tại", code: 4, user: {} })
     delete userData.password
     if (userData?.phone ? delete userData?.phone : null) delete userData?.phone
     return res.status(200).json({
       msg: "Lấy dữ liệu thành công",
       code: 0,
-      data: userData,
+      user: userData,
     })
   } else {
     /** Lấy thông tin chính bản thân mình */
