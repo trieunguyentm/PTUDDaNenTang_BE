@@ -36,33 +36,32 @@ export const createHelpRequest = async (req, res) => {
     imageUrls.push(url[0])
   }
   try {
+    /** Lấy thông tin người đăng */
+    const dataUser = (
+      await admin.database().ref(`users/${username}`).once("value")
+    ).val()
+    /** Sau khi lấy được imageUrls và thông tin người dùng thì lưu thông tin yêu cầu hỗ trợ */
     const helpRequestRef = admin.database().ref("helpRequests").push()
-    await helpRequestRef.set({
+    const data = {
       id: helpRequestRef.key,
       title,
       description,
       images: imageUrls,
       createdBy: username,
+      displayName: dataUser.displayName,
+      urlAvatar: dataUser.urlAvatar,
       createAt: new Date().toISOString(),
       status: 0,
-    })
-    /** Sau khi lấy được imageUrls thì lưu thông tin yêu cầu hỗ trợ */
+    }
+    await helpRequestRef.set(data)
     return res.status(200).json({
       msg: "Tạo yêu cầu hỗ trợ thành công",
       code: 0,
-      data: {
-        id: helpRequestRef.key,
-        title,
-        description,
-        images: imageUrls,
-        createdBy: username,
-        createAt: new Date().toISOString(),
-        status: 0,
-      },
+      data: data,
     })
   } catch (error) {
     console.log(error)
-    return res.status(500).json({ msg: "Xảy ra lỗi khi tải ảnh", code: 3 })
+    return res.status(500).json({ msg: "Xảy ra lỗi khi tạo yêu cầu", code: 3 })
   }
 }
 
