@@ -19,27 +19,40 @@ export const getUserData = async (req, res) => {
   }
   const username = decoded?.username
   const _username = req.params.username
+  /** Nếu là lấy thông tin người dùng khác */
   if (username !== _username) {
+    const userData = (
+      await admin.database().ref(`users/${_username}`).once("value")
+    ).val()
+    if (!userData)
+      return res
+        .status(400)
+        .json({ msg: "Người dùng này không tồn tại", code: 4, data: {} })
+    delete userData.password
+    if (userData?.phone ? delete userData?.phone : null) delete userData?.phone
     return res.status(200).json({
-      msg: "Thông tin token không chính xác với người dùng tương ứng",
-      code: 1,
+      msg: "Lấy dữ liệu thành công",
+      code: 0,
+      data: userData,
     })
-  }
-  const usersRef = admin.database().ref("users")
-  const user = usersRef.child(`${username}`)
-  const snapshot = await user.once("value")
-  /** Nếu người dùng không tồn tại */
-  if (!snapshot.exists()) {
+  } else {
+    /** Lấy thông tin chính bản thân mình */
+    const usersRef = admin.database().ref("users")
+    const user = usersRef.child(`${username}`)
+    const snapshot = await user.once("value")
+    /** Nếu người dùng không tồn tại */
+    if (!snapshot.exists()) {
+      return res
+        .status(404)
+        .json({ msg: "Không tìm thấy thông tin người dùng", code: 2 })
+    }
+    /** Lấy dữ liệu người dùng và trả về */
+    const userData = snapshot.val()
+    delete userData.password
     return res
-      .status(404)
-      .json({ msg: "Không tìm thấy thông tin người dùng", code: 2 })
+      .status(200)
+      .json({ msg: "Lấy dữ liệu thành công", code: 0, user: userData })
   }
-  /** Lấy dữ liệu người dùng và trả về */
-  const userData = snapshot.val()
-  delete userData.password
-  return res
-    .status(200)
-    .json({ msg: "Lấy dữ liệu thành công", code: 0, user: userData })
 }
 
 export const updateUserData = async (req, res) => {
