@@ -139,4 +139,11 @@ organizationRouter.get(
   organizationController.getPostInOrganization,
 )
 
+/** GET http://localhost:8080/api/organization/getPostByUser */
+organizationRouter.get(
+  "/getPostByUser",
+  organizationMiddleware.checkExistToken,
+  organizationController.getPostByUser,
+)
+
 export default organizationRouter

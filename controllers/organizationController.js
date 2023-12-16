@@ -4,6 +4,7 @@ import {
   checkRequestOfUser,
   createNewOrganization,
   getOrganization,
+  getPostByUserService,
   updateOrganization,
 } from "../firebase/organizationService.js"
 import admin from "../firebase/connect.js"
@@ -730,5 +731,43 @@ export const getPostInOrganization = async (req, res) => {
       code: 0,
       total: data.length,
     })
+  }
+}
+
+export const getPostByUser = async (req, res) => {
+  /** Lấy ra token được cung cấp */
+  const token = req.header("Authorization")?.split(" ")[1]
+  let username
+  try {
+    const decoded = await jwt.verify(token, process.env.KEY_JWT)
+    username = decoded.username
+  } catch (error) {
+    return res.status(500).json({ msg: "Lỗi khi xác minh token", code: 2 })
+  }
+  /** Lấy ra một mảng ID các tổ chức mà người dùng tham gia*/
+  const memberOrganizationRef = admin.database().ref("memberOrganizations")
+  const snapshot = await memberOrganizationRef
+    .orderByChild(username)
+    .equalTo(true)
+    .once("value")
+  const organizations = snapshot.val()
+  const organizationIds = organizations ? Object.keys(organizations) : []
+  if (organizationIds.length === 0)
+    return res
+      .status(200)
+      .json({ msg: "Lấy dữ liệu thành công", data: [], code: 0, total: 0 })
+  try {
+    const postData = await getPostByUserService(organizationIds)
+    return res.status(200).json({
+      msg: "Lấy dữ liệu thành công",
+      code: 0,
+      data: postData,
+      total: postData.length,
+    })
+  } catch (error) {
+    console.log("Lỗi xảy ra khi lấy danh sách các bài đăng")
+    return res
+      .status(500)
+      .json({ msg: "Lỗi xảy ra khi lấy danh sách các bài đăng", code: 3 })
   }
 }

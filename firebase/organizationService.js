@@ -103,3 +103,26 @@ export const checkRequestOfUser = async (username, organizationId) => {
   }
   return false
 }
+
+export const getPostByUserService = async (organizationIds) => {
+  const ref = admin.database().ref("postInOrganization")
+  const queries = organizationIds.map((orgId) => {
+    return ref.orderByChild("organizationId").equalTo(orgId).once("value")
+  })
+
+  // Using Promise.all to execute all queries simultaneously and await their resolution
+  try {
+    const results = await Promise.all(queries)
+    const posts = []
+    results.forEach((snapshot) => {
+      snapshot.forEach((childSnapshot) => {
+        posts.push(childSnapshot.val())
+      })
+    })
+    return posts // Now this will return the posts after all the queries have been resolved
+  } catch (error) {
+    console.error("Error fetching posts:", error)
+    // Handle the error appropriately
+    throw error // Re-throw the error if you want to handle it further up the call stack
+  }
+}
