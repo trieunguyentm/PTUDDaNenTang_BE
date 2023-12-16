@@ -48,8 +48,8 @@ export const createHelpRequest = async (req, res) => {
       description,
       images: imageUrls,
       createdBy: username,
-      displayName: dataUser.displayName,
-      urlAvatar: dataUser.urlAvatar,
+      displayName: dataUser?.displayName ? dataUser?.displayName : null,
+      urlAvatar: dataUser?.urlAvatar ? dataUser?.urlAvatar : null,
       createAt: new Date().toISOString(),
       status: 0,
     }
