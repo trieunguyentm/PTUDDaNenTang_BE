@@ -151,7 +151,15 @@ organizationRouter.post(
   "/cancelRequestJoinOrganization",
   organizationMiddleware.checkExistToken,
   organizationMiddleware.checkCancelRequestJoinOrganization,
-  organizationController.cancelRequestJoinOrganization
+  organizationController.cancelRequestJoinOrganization,
+)
+
+/** DELETE http://localhost:8080/api/organization/deleteOrganization/:organizationId */
+organizationRouter.delete(
+  "/deleteOrganization/:organizationId",
+  organizationMiddleware.checkExistToken,
+  organizationMiddleware.checkExistOrganizationParams,
+  organizationController.deleteOrganization,
 )
 
 export default organizationRouter

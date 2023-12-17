@@ -617,8 +617,9 @@ export const createPostInOrganization = async (req, res) => {
     }
   }
   /** Đăng bài trong tổ chức */
+  const _id = v4()
   const data = {
-    id: v4(),
+    id: _id,
     creator: username,
     organizationId: organizationId,
     description: description,
@@ -626,7 +627,7 @@ export const createPostInOrganization = async (req, res) => {
     createdAt: Date.now().toString(),
     updatedAt: Date.now().toString(),
   }
-  await admin.database().ref(`postInOrganization/${v4()}`).set(data)
+  await admin.database().ref(`postInOrganization/${_id}`).set(data)
   return res.status(200).json({ msg: "Đăng bài thành công", data, code: 0 })
 }
 
@@ -805,5 +806,74 @@ export const cancelRequestJoinOrganization = async (req, res) => {
   } catch (error) {
     console.log("Xảy ra lỗi khi xóa yêu cầu")
     return res.status(500).json({ msg: "Xảy ra lỗi khi xóa yêu cầu", code: 5 })
+  }
+}
+
+export const deleteOrganization = async (req, res) => {
+  const { organizationId } = req.params
+  /** Lấy ra token được cung cấp */
+  const token = req.header("Authorization")?.split(" ")[1]
+  let username
+  try {
+    const decoded = await jwt.verify(token, process.env.KEY_JWT)
+    username = decoded.username
+  } catch (error) {
+    return res.status(500).json({ msg: "Lỗi khi xác minh token", code: 2 })
+  }
+  /** Lấy thông tin tổ chức */
+  const organizationData = (
+    await admin.database().ref(`organizations/${organizationId}`).once("value")
+  ).val()
+  if (username !== organizationData.creator) {
+    return res
+      .status(403)
+      .json({ msg: "Bạn không có quyền thực hiện", code: 3 })
+  }
+  try {
+    /** Thực hiện xóa tổ chức */
+    /** Xóa memberOrganizations */
+    await admin.database().ref(`memberOrganizations/${organizationId}`).remove()
+    /** Xóa các postInOrganization */
+    await admin
+      .database()
+      .ref(`postInOrganization`)
+      .orderByChild("organizationId")
+      .equalTo(organizationId)
+      .once("value", (snapshot) => {
+        snapshot.forEach((childSnapshot) => {
+          childSnapshot.ref
+            .remove()
+            .then(() => {
+              console.log(`Đã xóa post có id: ${childSnapshot.key}`)
+            })
+            .catch((error) => console.log("Lỗi khi xóa post:", error))
+        })
+      })
+    /** Xóa các requestJoinOrganizations */
+    await admin
+      .database()
+      .ref(`requestJoinOrganizations`)
+      .orderByChild("organizationId")
+      .equalTo(organizationId)
+      .once("value", (snapshot) => {
+        snapshot.forEach((childSnapshot) => {
+          childSnapshot.ref
+            .remove()
+            .then(() => {
+              console.log(
+                `Đã xóa requestJoinOrganization có id ${childSnapshot.key}`,
+              )
+            })
+            .catch((error) => {
+              console.log("Lỗi khi xóa requestJoinOrganization:", error)
+            })
+        })
+      })
+    /** Xóa organization */
+    await admin.database().ref(`organizations/${organizationId}`).remove()
+    return res.status(200).json({ msg: "Xóa tổ chức thành công", code: 0 })
+  } catch (error) {
+    console.log(error)
+    return res.status(500).json({ msg: "Lỗi khi xóa tổ chức", code: 4 })
   }
 }
