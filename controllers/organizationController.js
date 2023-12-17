@@ -877,3 +877,42 @@ export const deleteOrganization = async (req, res) => {
     return res.status(500).json({ msg: "Lỗi khi xóa tổ chức", code: 4 })
   }
 }
+
+export const leaveOrganization = async (req, res) => {
+  const { organizationId } = req.params
+  /** Lấy ra token được cung cấp */
+  const token = req.header("Authorization")?.split(" ")[1]
+  let username
+  try {
+    const decoded = await jwt.verify(token, process.env.KEY_JWT)
+    username = decoded.username
+  } catch (error) {
+    return res.status(500).json({ msg: "Lỗi khi xác minh token", code: 2 })
+  }
+  /** Kiểm tra xem người dùng có trong nhóm hay không */
+  const check = (
+    await admin
+      .database()
+      .ref(`memberOrganizations/${organizationId}/${username}`)
+      .once("value")
+  ).val()
+  if (!check) {
+    return res.status(500).json({
+      msg: "Thao tác không thành công do bạn không có trong tổ chức này",
+      code: 3,
+    })
+  }
+  /** Xóa thành viên */
+  try {
+    await admin
+      .database()
+      .ref(`memberOrganizations/${organizationId}/${username}`)
+      .remove()
+    return res.status(200).json({ msg: "Rời nhóm thành công", code: 0 })
+  } catch (error) {
+    console.log("Lỗi khi rời nhóm")
+    return res
+      .status(500)
+      .json({ msg: "Lỗi xảy ra khi thực hiện rời nhóm", code: 4 })
+  }
+}

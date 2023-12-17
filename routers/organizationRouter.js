@@ -162,4 +162,12 @@ organizationRouter.delete(
   organizationController.deleteOrganization,
 )
 
+/** POST http://localhost:8080/api/organization/leaveOrganization/:organizationId */
+organizationRouter.post(
+  "/leaveOrganization/:organizationId",
+  organizationMiddleware.checkExistToken,
+  organizationMiddleware.checkExistOrganizationParams,
+  organizationController.leaveOrganization,
+)
+
 export default organizationRouter
