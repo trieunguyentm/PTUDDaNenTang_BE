@@ -140,3 +140,12 @@ export const checkCreatePostInOrganization = (req, res, next) => {
       .json({ msg: "Vui lòng cung cấp nội dung bài đăng", code: 1 })
   next()
 }
+
+export const checkCancelRequestJoinOrganization = (req, res, next) => {
+  const { requestId } = req.body
+  if (!requestId)
+    return res
+      .status(500)
+      .json({ msg: "Chưa cung cấp id của yêu cầu", code: 1 })
+  next()
+}

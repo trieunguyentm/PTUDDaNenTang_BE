@@ -771,3 +771,39 @@ export const getPostByUser = async (req, res) => {
       .json({ msg: "Lỗi xảy ra khi lấy danh sách các bài đăng", code: 3 })
   }
 }
+
+export const cancelRequestJoinOrganization = async (req, res) => {
+  /** Lấy ra token được cung cấp */
+  const token = req.header("Authorization")?.split(" ")[1]
+  let username
+  try {
+    const decoded = await jwt.verify(token, process.env.KEY_JWT)
+    username = decoded.username
+  } catch (error) {
+    return res.status(500).json({ msg: "Lỗi khi xác minh token", code: 2 })
+  }
+  /** Lấy ra thông tin request */
+  const { requestId } = req.body
+  const requestData = (
+    await admin
+      .database()
+      .ref(`requestJoinOrganizations/${requestId}`)
+      .once("value")
+  ).val()
+  if (!requestData)
+    return res.status(404).json({ msg: "Không có yêu cầu này", code: 3 })
+  /** Kiểm tra chính chủ của yêu cầu */
+  if (username !== requestData.username) {
+    return res
+      .status(403)
+      .json({ msg: "Không có quyền thao tác với yêu cầu này", code: 4 })
+  }
+  /** Xóa yêu cầu */
+  try {
+    await admin.database().ref(`requestJoinOrganizations/${requestId}`).remove()
+    return res.status(200).json({ msg: "Đã hủy yêu cầu thành công", code: 0 })
+  } catch (error) {
+    console.log("Xảy ra lỗi khi xóa yêu cầu")
+    return res.status(500).json({ msg: "Xảy ra lỗi khi xóa yêu cầu", code: 5 })
+  }
+}

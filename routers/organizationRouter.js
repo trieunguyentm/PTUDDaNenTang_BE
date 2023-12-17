@@ -146,4 +146,12 @@ organizationRouter.get(
   organizationController.getPostByUser,
 )
 
+/** POST http://localhost:8080/api/organization/cancelRequestJoinOrganization */
+organizationRouter.post(
+  "/cancelRequestJoinOrganization",
+  organizationMiddleware.checkExistToken,
+  organizationMiddleware.checkCancelRequestJoinOrganization,
+  organizationController.cancelRequestJoinOrganization
+)
+
 export default organizationRouter
