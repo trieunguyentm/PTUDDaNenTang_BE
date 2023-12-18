@@ -87,6 +87,8 @@ export const verifyOTP = async (req, res) => {
             phone,
             gender,
             role: "user",
+            urlAvatar:
+              "https://firebasestorage.googleapis.com/v0/b/volunteerapp-e7f94.appspot.com/o/user.png?alt=media&token=b33d9387-8cc5-4abd-a008-75ac55cfea4c",
           })
           return res.status(200).json({
             msg: "Đăng ký thành công",
@@ -96,6 +98,8 @@ export const verifyOTP = async (req, res) => {
               phone,
               gender,
               role: "user",
+              urlAvatar:
+                "https://firebasestorage.googleapis.com/v0/b/volunteerapp-e7f94.appspot.com/o/user.png?alt=media&token=b33d9387-8cc5-4abd-a008-75ac55cfea4c",
             },
             code: 0,
           })
