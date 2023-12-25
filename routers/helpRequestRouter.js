@@ -37,4 +37,20 @@ helpRequestRouter.get(
   helpRequestController.getHelpRequestByUser,
 )
 
+/** POST http://localhost:8080/api/helpRequest/sendRequestToOrganization */
+helpRequestRouter.post(
+  "/sendRequestToOrganization",
+  helpRequestMiddleware.checkExistToken,
+  helpRequestMiddleware.checkExistHelpRequest,
+  helpRequestMiddleware.checkExistOrganization,
+  helpRequestController.sendRequestToOrganization,
+)
+
+/** GET http://localhost:8080/api/helpRequest/getHelpRequestReceivedByOrganization/:organizationId */
+helpRequestRouter.get(
+  "/getHelpRequestReceivedByOrganization/:organizationId",
+  helpRequestMiddleware.checkExistOrganizationParams,
+  helpRequestController.getHelpRequestReceivedByOrganization,
+)
+
 export default helpRequestRouter

@@ -1,4 +1,5 @@
 import { fileTypeFromBuffer } from "file-type"
+import admin from "../firebase/connect.js"
 
 export const checkExistToken = (req, res, next) => {
   const authHeader = req.header("Authorization")
@@ -49,3 +50,39 @@ export const checkCreateHelpRequest = (req, res, next) => {
     })
   next()
 }
+
+export const checkExistHelpRequest = async (req, res, next) => {
+  const { helpRequestId } = req.body
+  const helpRequestRef = admin.database().ref("helpRequests")
+  const helpRequestDataRef = helpRequestRef.child(`${helpRequestId}`)
+  const snapshot = await helpRequestDataRef.once("value")
+  if (!snapshot.exists()) {
+    return res
+      .status(404)
+      .json({ msg: "Yêu cầu hỗ trợ không tồn tại", code: 1 })
+  }
+  next()
+}
+
+export const checkExistOrganization = async (req, res, next) => {
+  const { organizationId } = req.body
+  const organizationsRef = admin.database().ref("organizations")
+  const organizationDataRef = organizationsRef.child(`${organizationId}`)
+  const snapshot = await organizationDataRef.once("value")
+  if (!snapshot.exists()) {
+    return res.status(404).json({ msg: "Tổ chức không tồn tại", code: 1 })
+  }
+  next()
+}
+
+export const checkExistOrganizationParams = async (req, res, next) => {
+  const { organizationId } = req.params
+  const organizationsRef = admin.database().ref("organizations")
+  const organizationDataRef = organizationsRef.child(`${organizationId}`)
+  const snapshot = await organizationDataRef.once("value")
+  if (!snapshot.exists()) {
+    return res.status(404).json({ msg: "Tổ chức không tồn tại", code: 1 })
+  }
+  next()
+}
+
