@@ -916,3 +916,74 @@ export const leaveOrganization = async (req, res) => {
       .json({ msg: "Lỗi xảy ra khi thực hiện rời nhóm", code: 4 })
   }
 }
+
+export const deleteMemeber = async (req, res) => {
+  const { organizationId } = req.params
+  /** Lấy ra token được cung cấp */
+  const token = req.header("Authorization")?.split(" ")[1]
+  let username
+  try {
+    const decoded = await jwt.verify(token, process.env.KEY_JWT)
+    username = decoded.username
+  } catch (error) {
+    return res.status(500).json({ msg: "Lỗi khi xác minh token", code: 2 })
+  }
+  /** Kiểm tra xem có phải đang xóa chính mình */
+  const { member } = req.body
+  if (!member) {
+    return res
+      .status(400)
+      .json({ msg: "Chưa cung cấp đối tượng cần xóa", code: 5 })
+  }
+  if (member === username) {
+    return res.status(400).json({ msg: "Không thể xóa chính mình", code: 6 })
+  }
+  /** Kiểm tra xem thành viên member đã thuộc tổ chức hay chưa */
+  try {
+    const checkMember = (
+      await admin
+        .database()
+        .ref(`memberOrganizations/${organizationId}/${member}`)
+        .once("value")
+    ).val()
+    if (!checkMember) {
+      return res
+        .status(404)
+        .json({ msg: "Người dùng không thuộc trong nhóm này", code: 4 })
+    }
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ msg: "Lỗi khi kiểm tra thông tin người dùng bị xóa", code: 3 })
+  }
+  /** Kiểm tra quyền thực hiện */
+  const creator = (
+    await admin
+      .database()
+      .ref(`organizations/${organizationId}/creator`)
+      .once("value")
+  ).val()
+  if (username !== creator) {
+    return res.status(403).json({ msg: "Không có quyền thực hiện", code: 7 })
+  }
+  /** Xóa người dùng */
+  try {
+    const dataMember = await (
+      await admin
+        .database()
+        .ref(`memberOrganizations/${organizationId}`)
+        .once("value")
+    ).val()
+    delete dataMember[member]
+    await admin
+      .database()
+      .ref(`memberOrganizations/${organizationId}`)
+      .set(dataMember)
+    return res.status(200).json({ msg: "Xóa thành viên thành công", code: 0 })
+  } catch (error) {
+    console.log("Lỗi xảy ra khi xóa người dùng")
+    return res
+      .status(500)
+      .json({ msg: "Lỗi xảy ra khi xóa thành viên", code: 8 })
+  }
+}
