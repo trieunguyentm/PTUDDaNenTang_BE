@@ -20,7 +20,15 @@ export const checkExistToken = (req, res, next) => {
 
 export const checkDataUpdate = (req, res, next) => {
   const dataUpdate = req.body
-  const allowedFields = ["displayName", "phone", "gender"]
+  const allowedFields = [
+    "displayName",
+    "phone",
+    "gender",
+    "fundTime",
+    "personalDesc",
+    "abilitySupport",
+    "address",
+  ]
   for (const key in dataUpdate) {
     if (!allowedFields.includes(key)) {
       return res.status(400).json({
