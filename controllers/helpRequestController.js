@@ -205,3 +205,27 @@ export const getHelpRequestReceivedByOrganization = async (req, res) => {
     total: listHelpRequest.length,
   })
 }
+
+export const getOrganizationByHelpRequest = async (req, res, next) => {
+  const { helpRequestId } = req.params
+  try {
+    const dataRes = (
+      await admin
+        .database()
+        .ref(`helpRequestOrganization/${helpRequestId}`)
+        .once("value")
+    ).val()
+    let data = []
+    if (dataRes) {
+      data = Object.keys(dataRes)
+    }
+    return res
+      .status(200)
+      .json({ msg: "Lấy dữ liệu thành công", code: 0, data })
+  } catch (error) {
+    console.log("Lỗi khi lấy các tổ chức nhận yêu cầu hỗ trợ")
+    return res
+      .status(500)
+      .json({ msg: "Lỗi khi lấy các tổ chức nhận yêu cầu hỗ trợ", code: 2 })
+  }
+}

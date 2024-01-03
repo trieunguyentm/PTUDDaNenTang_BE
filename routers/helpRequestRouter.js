@@ -53,4 +53,11 @@ helpRequestRouter.get(
   helpRequestController.getHelpRequestReceivedByOrganization,
 )
 
+/** GET http://localhost:8080/api/helpRequest/getOrganizationByHelpRequest/:helpRequestId */
+helpRequestRouter.get(
+  "/getOrganizationByHelpRequest/:helpRequestId",
+  helpRequestMiddleware.checkExistHelpRequestParams,
+  helpRequestController.getOrganizationByHelpRequest,
+)
+
 export default helpRequestRouter

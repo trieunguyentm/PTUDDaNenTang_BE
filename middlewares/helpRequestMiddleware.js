@@ -64,6 +64,19 @@ export const checkExistHelpRequest = async (req, res, next) => {
   next()
 }
 
+export const checkExistHelpRequestParams = async (req, res, next) => {
+  const { helpRequestId } = req.params
+  const helpRequestRef = admin.database().ref("helpRequests")
+  const helpRequestDataRef = helpRequestRef.child(`${helpRequestId}`)
+  const snapshot = await helpRequestDataRef.once("value")
+  if (!snapshot.exists()) {
+    return res
+      .status(404)
+      .json({ msg: "Yêu cầu hỗ trợ không tồn tại", code: 1 })
+  }
+  next()
+}
+
 export const checkExistOrganization = async (req, res, next) => {
   const { organizationId } = req.body
   const organizationsRef = admin.database().ref("organizations")
