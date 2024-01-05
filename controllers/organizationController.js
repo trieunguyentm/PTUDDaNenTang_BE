@@ -1032,6 +1032,7 @@ export const createReport = async (req, res) => {
       titleReport,
       urlFile,
       originalName: file.originalname,
+      createdAt: Date.now().toString(),
     }
     await admin.database().ref(`report/${uuid}`).set(data)
     return res
