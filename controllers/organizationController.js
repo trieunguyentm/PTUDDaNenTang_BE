@@ -1045,3 +1045,33 @@ export const createReport = async (req, res) => {
       .json({ msg: "Có lỗi xảy ra khi upload hoặc đăng báo cáo", code: 4 })
   }
 }
+
+export const getReportByOrganization = async (req, res) => {
+  try {
+    const { organizationId } = req.params
+    const dataRes = (
+      await admin
+        .database()
+        .ref(`report`)
+        .orderByChild("organizationId")
+        .equalTo(organizationId)
+        .once("value")
+    ).val()
+    let data = []
+    if (dataRes) {
+      data = Object.values(dataRes)
+    }
+    return res
+      .status(200)
+      .json({
+        msg: "Lấy dữ liệu thành công",
+        code: 0,
+        data,
+        total: data.length,
+      })
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ msg: "Lỗi xảy ra khi lấy thông tin các báo cáo", code: 2 })
+  }
+}

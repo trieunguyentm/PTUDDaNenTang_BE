@@ -189,3 +189,11 @@ organizationRouter.post(
   organizationMiddleware.checkCreateReport,
   organizationController.createReport,
 )
+
+/** GET http://localhost:8080/api/organization/getReportByOrganization/:organizationId */
+organizationRouter.get(
+  "/getReportByOrganization/:organizationId",
+  organizationMiddleware.checkExistToken,
+  organizationMiddleware.checkExistOrganizationParams,
+  organizationController.getReportByOrganization,
+)

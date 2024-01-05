@@ -21,7 +21,7 @@ app.use("/api", router)
 const port = process.env.PORT || 8080
 
 console.log(CryptoJS.AES.encrypt("1234567", process.env.KEY_AES).toString())
-console.log(CryptoJS.AES.encrypt("1234567", process.env.KEY_AES).toString())
+console.log(CryptoJS.AES.encrypt("123456", process.env.KEY_AES).toString())
 
 /** Start server */
 app.listen(port, () => {
