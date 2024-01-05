@@ -179,3 +179,13 @@ organizationRouter.delete(
 )
 
 export default organizationRouter
+
+/** POST http://localhost:8080/api/organization/createReport */
+organizationRouter.post(
+  "/createReport",
+  upload.single("file"),
+  organizationMiddleware.checkExistToken,
+  organizationMiddleware.checkExistOrganization,
+  organizationMiddleware.checkCreateReport,
+  organizationController.createReport,
+)

@@ -987,3 +987,60 @@ export const deleteMemeber = async (req, res) => {
       .json({ msg: "Lỗi xảy ra khi xóa thành viên", code: 8 })
   }
 }
+
+export const createReport = async (req, res) => {
+  /** Lấy ra token được cung cấp */
+  const token = req.header("Authorization")?.split(" ")[1]
+  let username
+  try {
+    const decoded = await jwt.verify(token, process.env.KEY_JWT)
+    username = decoded.username
+  } catch (error) {
+    return res.status(500).json({ msg: "Lỗi khi xác minh token", code: 2 })
+  }
+  /** Lấy ra organizationId */
+  const { organizationId, titleReport } = req.body
+  /** Kiểm tra quyền của người dùng */
+  try {
+    const adminOrg = (
+      await admin
+        .database()
+        .ref(`organizations/${organizationId}/creator`)
+        .once("value")
+    ).val()
+    if (username !== adminOrg)
+      return res
+        .status(403)
+        .json({ msg: "Không có quyền thực hiện đăng báo cáo", code: 3 })
+    /** Lấy ra file */
+    const file = req.file
+    /** Lấy ra urlFile */
+    const fileRef = admin
+      .storage()
+      .bucket()
+      .file(`reportOfOrganization/${organizationId}/${file.originalname}`)
+    await fileRef.save(file.buffer)
+    const urlFile = await fileRef.getSignedUrl({
+      action: "read",
+      expires: "03-01-2500",
+    })
+    /** Đăng tải lên db */
+    const uuid = v4()
+    const data = {
+      creator: username,
+      organizationId,
+      titleReport,
+      urlFile,
+      originalName: file.originalname,
+    }
+    await admin.database().ref(`report/${uuid}`).set(data)
+    return res
+      .status(200)
+      .json({ msg: "Đăng báo cáo thành công", code: 0, data })
+  } catch (error) {
+    console.log("Có lỗi xảy ra khi upload hoặc đăng báo cáo")
+    return res
+      .status(500)
+      .json({ msg: "Có lỗi xảy ra khi upload hoặc đăng báo cáo", code: 4 })
+  }
+}

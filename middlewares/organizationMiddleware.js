@@ -149,3 +149,14 @@ export const checkCancelRequestJoinOrganization = (req, res, next) => {
       .json({ msg: "Chưa cung cấp id của yêu cầu", code: 1 })
   next()
 }
+
+export const checkCreateReport = (req, res, next) => {
+  const { titleReport } = req.body
+  if (!titleReport) {
+    return res.status(400).json({ msg: "Chưa cung tiêu đề báo cáo", code: 1 })
+  }
+  if (!req.file) {
+    return res.status(400).json({ msg: "Chưa cung cấp file báo cáo", code: 1 })
+  }
+  next()
+}
