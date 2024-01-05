@@ -1027,6 +1027,7 @@ export const createReport = async (req, res) => {
     /** Đăng tải lên db */
     const uuid = v4()
     const data = {
+      id: uuid,
       creator: username,
       organizationId,
       titleReport,
@@ -1061,14 +1062,12 @@ export const getReportByOrganization = async (req, res) => {
     if (dataRes) {
       data = Object.values(dataRes)
     }
-    return res
-      .status(200)
-      .json({
-        msg: "Lấy dữ liệu thành công",
-        code: 0,
-        data,
-        total: data.length,
-      })
+    return res.status(200).json({
+      msg: "Lấy dữ liệu thành công",
+      code: 0,
+      data,
+      total: data.length,
+    })
   } catch (error) {
     return res
       .status(500)
