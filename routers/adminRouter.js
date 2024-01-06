@@ -46,4 +46,11 @@ adminRouter.get(
   adminController.getPostInOrganization,
 )
 
+/** DELETE http://localhost:8080/api/admin/deletePostInOrganization/:postId */
+adminRouter.delete(
+  "/deletePostInOrganization/:postId",
+  adminMiddleware.checkAdmin,
+  adminController.deletePostInOrganization,
+)
+
 export default adminRouter

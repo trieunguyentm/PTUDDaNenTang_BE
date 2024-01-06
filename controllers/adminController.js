@@ -189,16 +189,30 @@ export const getAllHelpRequest = async (req, res) => {
     let listHelpRequest = []
     if (!dataRes) listHelpRequest = []
     else listHelpRequest = Object.values(dataRes)
-    return res
-      .status(200)
-      .json({
-        msg: "Lấy dữ liệu thành công",
-        code: 0,
-        data: listHelpRequest,
-        total: listHelpRequest.length,
-      })
+    return res.status(200).json({
+      msg: "Lấy dữ liệu thành công",
+      code: 0,
+      data: listHelpRequest,
+      total: listHelpRequest.length,
+    })
   } catch (error) {
     console.log("Lỗi khi lấy dữ liệu")
     return res.status(500).json({ msg: "Lỗi khi lấy dữ liệu", code: 3 })
+  }
+}
+
+export const deletePostInOrganization = async (req, res) => {
+  const { postId } = req.params
+  const dataPost = await admin
+    .database()
+    .ref(`postInOrganization/${postId}`)
+    .once("value")
+  if (!dataPost.exists())
+    return res.status(404).json({ msg: "Bài đăng không tồn tại", code: 2 })
+  try {
+    await admin.database().ref(`postInOrganization/${postId}`).remove()
+    return res.status(200).json({ msg: "Xóa bài đăng thành công", code: 0 })
+  } catch (error) {
+    return res.status(500).json({ msg: "Lỗi khi xóa bài đăng", code: 3 })
   }
 }
