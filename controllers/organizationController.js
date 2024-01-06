@@ -1074,3 +1074,102 @@ export const getReportByOrganization = async (req, res) => {
       .json({ msg: "Lỗi xảy ra khi lấy thông tin các báo cáo", code: 2 })
   }
 }
+
+export const updatePoint = async (req, res, next) => {
+  /** Lấy ra token được cung cấp */
+  const token = req.header("Authorization")?.split(" ")[1]
+  let _username
+  try {
+    const decoded = await jwt.verify(token, process.env.KEY_JWT)
+    _username = decoded.username
+  } catch (error) {
+    return res.status(500).json({ msg: "Lỗi khi xác minh token", code: 2 })
+  }
+  /** Kiểm tra quyền thực hiện */
+  const { username, organizationId, point } = req.body
+  const dataOrg = (
+    await admin.database().ref(`organizations/${organizationId}`).once("value")
+  ).val()
+  if (dataOrg.creator !== _username) {
+    return res
+      .status(403)
+      .json({ msg: "Không có quyền thực hiện việc này", code: 3 })
+  }
+  /** Kiểm tra username có thuộc về organizationId hay không */
+  const checkMemberInOrg = (
+    await admin
+      .database()
+      .ref(`memberOrganizations/${organizationId}/${username}`)
+      .once("value")
+  ).val()
+  if (!checkMemberInOrg) {
+    return res
+      .status(404)
+      .json({ msg: "Không tìm thấy thành viên này trong tổ chức", code: 4 })
+  }
+  try {
+    /** Tăng điểm cho người dùng trong tổ chức */
+    const dataPoint = (
+      await admin
+        .database()
+        .ref(`points/${organizationId + "*" + username}`)
+        .once("value")
+    ).val()
+    if (!dataPoint) {
+      /** Nếu chưa có điểm */
+      dataPoint = {
+        point: 0,
+      }
+    }
+    /** Nếu đã có điểm thì cộng thêm */
+    await admin
+      .database()
+      .ref(`points/${organizationId + "*" + username}`)
+      .set({
+        ...dataPoint,
+        point: dataPoint.point + point,
+      })
+    return res.status(200).json({ msg: "Cập nhật điểm thành công", code: 0 })
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ msg: "Lỗi xảy ra khi thêm điểm cho người dùng", code: 5 })
+  }
+}
+
+export const getPointOfOrganization = async (req, res) => {
+  const { organizationId } = req.body
+  const dataRes = (
+    await admin
+      .database()
+      .ref(`memberOrganizations/${organizationId}`)
+      .once("value")
+  ).val()
+  try {
+    const trueMembers = []
+    for (const [key, value] of Object.entries(dataRes)) {
+      if (value === true) {
+        trueMembers.push(key)
+      }
+    }
+    let data = {}
+    for (const member of trueMembers) {
+      console.log(member)
+      const pointMember = (
+        await admin
+          .database()
+          .ref(`points/${organizationId + "*" + member}`)
+          .once("value")
+      ).val()
+      data = { ...data, [member]: pointMember ? pointMember.point : 0 }
+    }
+    // console.log(data)
+    return res
+      .status(200)
+      .json({ msg: "Lấy điểm các thành viên thành công", code: 0, data })
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ msg: "Lỗi khi lấy điểm của thành viên", code: 1 })
+  }
+}

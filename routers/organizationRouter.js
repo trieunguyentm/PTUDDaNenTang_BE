@@ -197,3 +197,21 @@ organizationRouter.get(
   organizationMiddleware.checkExistOrganizationParams,
   organizationController.getReportByOrganization,
 )
+
+/** POST http://localhost:8080/api/organization/updatePoint */
+organizationRouter.post(
+  "/updatePoint",
+  organizationMiddleware.checkExistToken,
+  organizationMiddleware.checkExistUser,
+  organizationMiddleware.checkExistOrganization,
+  organizationMiddleware.checkUpdatePoint,
+  organizationController.updatePoint,
+)
+
+/** GET http://localhost:8080/api/organization/getPointOfOrganization */
+organizationRouter.get(
+  "/getPointOfOrganization",
+  organizationMiddleware.checkExistToken,
+  organizationMiddleware.checkExistOrganization,
+  organizationController.getPointOfOrganization,
+)

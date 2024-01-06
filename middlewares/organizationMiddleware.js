@@ -160,3 +160,17 @@ export const checkCreateReport = (req, res, next) => {
   }
   next()
 }
+
+export const checkUpdatePoint = (req, res, next) => {
+  const { point } = req.body
+  if (!point) {
+    return res.status(400).json({ msg: "Chưa cung cấp điểm số", code: 1 })
+  }
+  if (typeof point !== "number") {
+    return res.status(400).json({ msg: "Điểm cung cấp không hợp lệ", code: 1 })
+  }
+  if (point > 10 || point < -10) {
+    return res.status(400).json({ msg: "Điểm cung cấp không hợp lệ", code: 1 })
+  }
+  next()
+}
