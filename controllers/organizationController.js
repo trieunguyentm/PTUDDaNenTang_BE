@@ -512,15 +512,47 @@ export const getUserInOrganization = async (req, res) => {
   const memberData = (await memberOrganizationsDataRef.once("value")).val()
   if (!memberData)
     return res.status(200).json({ msg: "Thành công", code: 0, data: [] })
-  const listMember = Object.keys(memberData)
-  if (!listMember.includes(username))
-    return res.status(400).json({
-      msg: "Người dùng không thể xem được thông tin thành viên của nhóm này",
-      code: 3,
-    })
-  return res
-    .status(200)
-    .json({ msg: "Thành công", code: 0, data: Object.keys(memberData) })
+  try {
+    const trueMembers = []
+    for (const [key, value] of Object.entries(memberData)) {
+      if (value === true) {
+        trueMembers.push(key)
+      }
+    }
+    let dataPoint = {}
+    for (const member of trueMembers) {
+      console.log(member)
+      const pointMember = (
+        await admin
+          .database()
+          .ref(`points/${organizationId + "*" + member}`)
+          .once("value")
+      ).val()
+      dataPoint = { ...dataPoint, [member]: pointMember ? pointMember.point : 0 }
+    }
+    // console.log(data)
+    return res
+      .status(200)
+      .json({
+        msg: "Lấy thành viên thành công",
+        code: 0,
+        data: trueMembers,
+        dataPoint,
+      })
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ msg: "Lỗi khi lấy danh sách thành viên của nhóm", code: 1 })
+  }
+  // const listMember = Object.keys(memberData)
+  // if (!listMember.includes(username))
+  //   return res.status(400).json({
+  //     msg: "Người dùng không thể xem được thông tin thành viên của nhóm này",
+  //     code: 3,
+  //   })
+  // return res
+  //   .status(200)
+  //   .json({ msg: "Thành công", code: 0, data: Object.keys(memberData) })
 }
 
 export const checkUserJoinOrganization = async (req, res) => {
