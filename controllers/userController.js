@@ -166,3 +166,29 @@ export const changePassword = async (req, res) => {
     })
   }
 }
+
+export const getTotalPoint = async (req, res) => {
+  try {
+    const { username } = req.params
+    const dataUser = (
+      await admin.database().ref(`users/${username}`).once("value")
+    ).val()
+    if (!dataUser) {
+      return res.status(404).json({ msg: "Người dùng không tồn tại", code: 1 })
+    }
+    let point = 0
+    const dataRes = (await admin.database().ref(`points`).once("value")).val()
+    for (const [key, value] of Object.entries(dataRes)) {
+      if (key.endsWith(`*${username}`)) {
+        point += value.point
+      }
+    }
+    return res
+      .status(200)
+      .json({ msg: "Lấy điểm của người dùng thành công", code: 0, point })
+  } catch (error) {
+    return res
+      .status(500)
+      .json({ msg: "Lỗi khi lấy điểm của người dùng", code: 1 })
+  }
+}

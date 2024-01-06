@@ -23,7 +23,10 @@ userRouter.put(
   "/changePassword/:username",
   userMiddleware.checkExistToken,
   userMiddleware.checkChangePassword,
-  userController.changePassword
+  userController.changePassword,
 )
+
+/** PUT http://localhost:8080/api/user/getTotalPoint/:username */
+userRouter.get("/getTotalPoint/:username", userController.getTotalPoint)
 
 export default userRouter
