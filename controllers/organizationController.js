@@ -528,17 +528,18 @@ export const getUserInOrganization = async (req, res) => {
           .ref(`points/${organizationId + "*" + member}`)
           .once("value")
       ).val()
-      dataPoint = { ...dataPoint, [member]: pointMember ? pointMember.point : 0 }
+      dataPoint = {
+        ...dataPoint,
+        [member]: pointMember ? pointMember.point : 0,
+      }
     }
     // console.log(data)
-    return res
-      .status(200)
-      .json({
-        msg: "Lấy thành viên thành công",
-        code: 0,
-        data: trueMembers,
-        dataPoint,
-      })
+    return res.status(200).json({
+      msg: "Lấy thành viên thành công",
+      code: 0,
+      data: trueMembers,
+      dataPoint,
+    })
   } catch (error) {
     return res
       .status(500)
@@ -1141,7 +1142,7 @@ export const updatePoint = async (req, res, next) => {
   }
   try {
     /** Tăng điểm cho người dùng trong tổ chức */
-    const dataPoint = (
+    let dataPoint = (
       await admin
         .database()
         .ref(`points/${organizationId + "*" + username}`)
@@ -1163,6 +1164,7 @@ export const updatePoint = async (req, res, next) => {
       })
     return res.status(200).json({ msg: "Cập nhật điểm thành công", code: 0 })
   } catch (error) {
+    console.log(error)
     return res
       .status(500)
       .json({ msg: "Lỗi xảy ra khi thêm điểm cho người dùng", code: 5 })
