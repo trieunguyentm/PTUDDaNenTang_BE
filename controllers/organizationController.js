@@ -174,9 +174,15 @@ export const getAllOrganization = async (req, res) => {
   try {
     const organizationsRef = admin.database().ref("organizations")
     let listOrg = []
-    await organizationsRef.once("value", (snapshot) => {
-      listOrg = Object.values(snapshot.val())
-    })
+    try {
+      await organizationsRef.once("value", (snapshot) => {
+        if (snapshot.val() !== null) listOrg = Object.values(snapshot.val())
+      })
+    } catch (error) {
+      console.log(error)
+      console.log(listOrg)
+    }
+
     return res.status(200).json({ msg: "Thành công", code: 0, data: listOrg })
   } catch (error) {
     return res
